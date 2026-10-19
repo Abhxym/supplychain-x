@@ -1,7 +1,7 @@
 """Have a quick look at any parquet file or folder in the data lake.
 
     python scripts/peek.py data/bronze/trade
-    python scripts/peek.py data/bronze/trade/year=2023/reporter=IND.parquet --cols reporterISO partnerISO cmdCode flowCode primaryValue
+    python scripts/peek.py data/bronze/trade/year=2023/IND.parquet --cols reporterISO partnerISO cmdCode flowCode primaryValue
 """
 import argparse
 

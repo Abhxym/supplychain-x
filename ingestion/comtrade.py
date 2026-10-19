@@ -1,7 +1,7 @@
 """Download annual bilateral trade from UN Comtrade into the bronze layer.
 
 One API call = one reporter, one year, all our HS chapters, imports + exports.
-Output: data/bronze/trade/year=YYYY/reporter=ISO3.parquet
+Output: data/bronze/trade/year=YYYY/ISO3.parquet
 
 Already-downloaded files are skipped, so you can stop and rerun any time
 (the free key is limited to ~500 calls a day).
@@ -81,7 +81,7 @@ def main():
     calls = 0
     for year in args.years:
         for iso3 in args.reporters:
-            out = config.BRONZE / "trade" / f"year={year}" / f"reporter={iso3}.parquet"
+            out = config.BRONZE / "trade" / f"year={year}" / f"{iso3}.parquet"
             if out.exists():
                 print(f"skip  {year} {iso3} (already have it)")
                 continue
