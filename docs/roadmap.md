@@ -33,8 +33,10 @@ Data issues found, to fix in silver:
 - [x] Spark standalone cluster: 1 master + 2 workers (2 cores, 1.5 GB each), reads/writes HDFS
 - [x] `scripts/hdfs_load_bronze.py` copies the local landing zone into `hdfs:///lake/bronze`
 - [x] Smoke test: Spark sums world trade per year straight from HDFS on both workers
-- [ ] Clean, type, dedupe each source → `hdfs:///lake/silver`, partitioned by `year`
-      (fixes the data issues listed under phase 1)
+- [x] Silver layer on HDFS, one Spark job per source with data-quality gates
+      (`python scripts/spark_run.py silver`, details in [data-quality.md](data-quality.md)):
+      `countries` (245, ISO3 key) · `trade` (326,775) + `trade_totals` (2,400) · `events` (48,827)
+      + `event_countries` (43,785) · `ports` (3,805, all with ISO3) · `weather` (82,170, severe-day flags)
 - [ ] Features: trade_share, supplier_concentration (HHI), event_frequency, weather_severity flags
 - [ ] Dependencies table → `hdfs:///lake/gold`, loaded into Postgres
 - [ ] Fault tolerance demo: stop one DataNode, show the lake is still readable

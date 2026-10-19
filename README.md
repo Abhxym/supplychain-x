@@ -72,6 +72,9 @@ python -m ingestion.weather
 # put it into HDFS and check Spark can read it
 python scripts/hdfs_load_bronze.py
 docker exec scx-spark-master /opt/spark/bin/spark-submit /opt/scx/spark_jobs/smoke_test.py
+
+# phase 2: clean bronze -> silver on the Spark cluster (stops if a data-quality check fails)
+python scripts/spark_run.py silver
 ```
 
 | Service          | URL                      |
