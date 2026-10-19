@@ -85,11 +85,14 @@ variants (severity only / + exposure / + centrality) against historical cases.
   and monthly severe port-weather days as spikes; an insight card explaining the result in one sentence.
 - **Right:** gauge rings - countries in the cascade, peak impact, severity (cyan when our weather data raised it).
 - **Bottom:** industry x country dot matrix of the cascade, and events by alert level.
+- **Unusual trade drops** (Phase 6, `GET /api/anomalies`): the 12 strangest import drops Isolation Forest found
+  (`python -m ml.anomalies`), with value before -> after and the change in the supplier's share. **Only hit
+  country** keeps the drops where the event's country is supplier or importer; names in the cascade are orange.
 - **Top bar:** event picker (556 scored events, searchable) and the what-if simulator (countries, severity,
   duration, decay, minimum link share).
 - **Every number is explainable:** click any dot in the industry matrix for the full breakdown (why that
   country/industry is exposed, the five factors and the formula with the actual numbers), switch on
   **Values** to print every score, or open **All values** for the complete table of the cascade.
-- **Made for first-time viewers:** a welcome card on the first visit, a 10-step guided tour that spotlights
+- **Made for first-time viewers:** a welcome card on the first visit, an 11-step guided tour that spotlights
   each panel (restart it with the ? button), an i button with a plain-language explanation on every panel,
   and a map legend.

@@ -202,6 +202,45 @@ function render(r, animated = true) {
                                    : `What if ${r.sources.map(s => s.name).join(" + ")} is disrupted?`;
   $("#hops-v").textContent = r.summary.max_hop;
   $("#tb-count").textContent = `${r.summary.countries} countries`;
+  drawAnomalies();
+}
+
+// ================================================================ unusual trade drops (Phase 6)
+// Flows Isolation Forest flagged as strange falls (ml/anomalies.py). "Only hit country" keeps the drops
+// where the hit country is the supplier or the importer; countries in the cascade are highlighted.
+const money = v => "$" + d3.format(".2s")(v).replace("G", "B");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+// one decimal near 0% and near -100%; every flow listed is still above zero, so never show "-100%"
+const pctChange = c => { const p = Math.max(c * 100, -99.9); return (Math.abs(p) < 10 || Math.abs(p) > 99 ? p.toFixed(1) : Math.round(p)) + "%"; };
+
+async function drawAnomalies() {
+  const r = state.result;
+  const only = $("#an-only").getAttribute("aria-pressed") === "true";
+  const hit = r ? r.sources.map(s => s.iso3) : [];
+  const key = only + hit.join(",");
+  if (key === state.anomKey) return;              // render() also runs on resize - don't refetch
+  state.anomKey = key;
+  const qs = only && hit.length ? "&countries=" + hit.join(",") : "";
+  const data = await fetch("/api/anomalies?limit=12" + qs).then(x => x.json()).catch(() => null);
+  if (key !== state.anomKey) return;              // a newer event was picked meanwhile
+  if (!data) { $("#anoms").innerHTML = `<div class="an-empty">Run <code>python -m ml.anomalies</code> to fill this list.</div>`; return; }
+
+  const inCascade = new Set(r ? [...hit, ...r.affected.map(a => a.iso3)] : []);
+  const names = hit.map(i => state.countries.get(i)?.name || i).join(" + ");
+  $("#an-sub").textContent = only ? `${fmt(data.total)} involve ${names}` : `strangest ${data.items.length} of ${fmt(data.total)} · 2020–2023`;
+  const who = (iso, name) => inCascade.has(iso) ? `<b>${esc(name || iso)}</b>` : esc(name || iso);
+  $("#anoms").innerHTML = data.items.length ? data.items.map(a => `
+    <div class="an-row${inCascade.has(a.importer) || inCascade.has(a.supplier) ? " hit" : ""}"
+         title="Isolation Forest score ${a.score.toFixed(3)} - higher is stranger">
+      <span class="who">${who(a.importer, a.importer_name)}<span class="arrow">&larr;</span>${who(a.supplier, a.supplier_name)}</span>
+      <span class="chg">${pctChange(a.change)}</span>
+      <span class="what">${esc(a.product)} · ${a.year} · share ${a.share_change > 0 ? "+" : ""}${(a.share_change * 100).toFixed(1)} pts</span>
+      <span class="val">${money(a.value_before)} &rarr; ${money(a.value_after)}</span>
+      <span class="bar"><i style="width:${Math.min(100, -a.change * 100).toFixed(0)}%"></i></span>
+    </div>`).join("")
+    : `<div class="an-empty">No unusual yearly drop involves ${esc(names)}. Annual trade totals average out short
+       disruptions - a two-week port closure rarely shows up in a whole year of trade.</div>`;
 }
 
 function curve([x1, y1], [x2, y2]) {
@@ -586,6 +625,11 @@ function bindUI() {
     e.stopPropagation(); renderEventList(); openPop("event-pop", e.currentTarget); $("#pop-q").focus();
   });
   $("#pop-q").addEventListener("input", renderEventList);
+  $("#an-only").addEventListener("click", e => {
+    const b = e.currentTarget;
+    b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+    drawAnomalies();
+  });
   $("#q").addEventListener("input", e => {
     $("#pop-q").value = e.target.value; renderEventList(); openPop("event-pop", $("#event-btn"));
   });
@@ -672,6 +716,11 @@ const INFO = {
   alerts: ["Events by alert level",
     "All 48,802 disasters from 2019–2023, by GDACS alert level. <b>Weather-raised</b> counts the events where our own " +
     "port weather data showed it was worse than GDACS said, so the engine raised the severity."],
+  anoms: ["Unusual trade drops",
+    "Yearly import flows (importer &larr; supplier, one product) that fell in an <b>unusual</b> way, found by an " +
+    "<b>Isolation Forest</b>: a machine-learning method that cuts the data at random and flags points that are cut off " +
+    "after only a few cuts. No labels needed. Most of the strangest drops are <b>wars, sanctions and export bans</b>, " +
+    "not weather - short disasters rarely show up in a whole year of trade. <b>Orange names</b> are in the current cascade."],
 };
 
 function showInfo(btn) {
@@ -779,6 +828,9 @@ const TOUR = [
           "<b>Values</b> to print every number, or <b>All values</b> for the complete table." },
   { sel: ".alerts-card", title: "9. The big picture",
     text: "All 48,802 disasters by alert level. The last card counts events our weather data found to be worse than reported." },
+  { sel: ".anoms-card", title: "10. Unusual trade drops",
+    text: "Trade flows that fell in a strange way, found by machine learning (Isolation Forest). " +
+          "Press <b>Only hit country</b> to see the drops linked to the country hit by this event." },
   { sel: "#help-btn", title: "That's it!",
     text: "Press <b>?</b> any time to see this again. Every panel also has a small <b>i</b> button with an explanation." },
 ];

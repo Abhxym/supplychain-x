@@ -7,6 +7,7 @@ GET  /api/events          events the engine has scored, highest impact first
 GET  /api/impact/{id}     full cascade for one event
 POST /api/simulate        what-if: pick countries, severity, duration -> cascade
 GET  /api/countries       countries in the graph with centrality and coordinates (for the map)
+GET  /api/anomalies       unusual trade drops from Isolation Forest (Phase 6), optionally for some countries
 """
 import json
 from functools import lru_cache
@@ -123,6 +124,35 @@ def _stats():
 @app.get("/api/stats")
 def stats():
     return _stats()
+
+
+@app.get("/api/anomalies")
+def anomalies(limit: int = 12, countries: Optional[str] = None):
+    """Unusual import drops found by Isolation Forest (python -m ml.anomalies), strangest first.
+    countries=CHN,JPN keeps the drops where the importer or the supplier is one of them."""
+    sql = """SELECT a.year, a.reporter, r.country_name, a.partner, p.country_name, a.hs2, c.commodity_name,
+                    a.value_prev::float, a.value::float, a.dshare, a.score
+             FROM ml_trade_anomalies a
+             LEFT JOIN countries r ON r.iso3 = a.reporter
+             LEFT JOIN countries p ON p.iso3 = a.partner
+             LEFT JOIN commodities c ON c.hs_code = a.hs2
+             {} ORDER BY a.score DESC LIMIT %s"""
+    codes = [c.strip().upper() for c in (countries or "").split(",") if c.strip()]
+    with connect() as db:
+        if codes:
+            rows = db.execute(sql.format("WHERE a.reporter = ANY(%s) OR a.partner = ANY(%s)"),
+                              (codes, codes, limit)).fetchall()
+            total = db.execute("SELECT count(*) FROM ml_trade_anomalies WHERE reporter = ANY(%s) OR partner = ANY(%s)",
+                               (codes, codes)).fetchone()[0]
+        else:
+            rows = db.execute(sql.format(""), (limit,)).fetchall()
+            total = db.execute("SELECT count(*) FROM ml_trade_anomalies").fetchone()[0]
+    keys = ["year", "importer", "importer_name", "supplier", "supplier_name", "hs2", "product",
+            "value_before", "value_after", "share_change", "score"]
+    items = [dict(zip(keys, r)) for r in rows]
+    for it in items:
+        it["change"] = it["value_after"] / it["value_before"] - 1
+    return {"total": total, "items": items}
 
 
 class Simulation(BaseModel):

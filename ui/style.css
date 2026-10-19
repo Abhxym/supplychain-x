@@ -65,14 +65,15 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .grid {
   display: grid; min-height: calc(100vh - 64px);
   grid-template-columns: 290px 1fr 1fr 210px;
-  grid-template-rows: minmax(max(600px, calc(100vh - 64px - 290px)), auto) auto;
-  grid-template-areas: "hero map map gauges" "matrix matrix alerts alerts";
+  grid-template-rows: minmax(max(600px, calc(100vh - 64px - 290px)), auto) auto auto;
+  grid-template-areas: "hero map map gauges" "matrix matrix alerts alerts" "anoms anoms anoms anoms";
 }
 .hero { grid-area: hero; padding: 26px 22px 18px; display: flex; flex-direction: column; gap: 22px; }
 .map { grid-area: map; position: relative; min-height: 560px; overflow: hidden; }
 .gauges { grid-area: gauges; display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px; padding: 18px 18px 18px 0; }
 .matrix-card { grid-area: matrix; }
 .alerts-card { grid-area: alerts; }
+.anoms-card { grid-area: anoms; min-height: 0; }
 .card { margin: 0 14px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--glass);
   padding: 16px 18px; min-height: 260px; display: flex; flex-direction: column; }
 .matrix-card { margin-right: 7px; }
@@ -195,7 +196,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 /* ---------- smaller screens ---------- */
 @media (max-width: 1240px) {
   .grid { height: auto; grid-template-columns: 1fr 1fr; grid-template-rows: auto;
-    grid-template-areas: "hero gauges" "map map" "matrix matrix" "alerts alerts"; }
+    grid-template-areas: "hero gauges" "map map" "matrix matrix" "alerts alerts" "anoms anoms"; }
   .map { aspect-ratio: 16 / 9; }
   .gauges { flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 18px; }
   .card { margin: 0 14px 14px; min-height: 230px; }
@@ -205,7 +206,7 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 @media (max-width: 760px) {
   .bar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 10px; }
   .filters { margin: 0; }
-  .grid { grid-template-columns: 1fr; grid-template-areas: "hero" "map" "gauges" "matrix" "alerts"; }
+  .grid { grid-template-columns: 1fr; grid-template-areas: "hero" "map" "gauges" "matrix" "alerts" "anoms"; }
   .hero { padding: 20px 16px; }
   .map { aspect-ratio: 4 / 3; }
   .stack { display: none; }
@@ -244,6 +245,19 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 .tool:hover { color: var(--text); border-color: var(--line-2); }
 .tool[aria-pressed="true"] { color: #062018; background: var(--teal); border-color: var(--teal); }
 #matrix .cell { cursor: pointer; }
+
+/* unusual trade drops (Isolation Forest, Phase 6) */
+.anoms { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px 22px; }
+.an-row { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px; min-width: 0; }
+.an-row .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-row .who .arrow { color: var(--muted); margin: 0 4px; }
+.an-row .chg { color: var(--red); font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; }
+.an-row .what { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-row .val { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.an-row .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.an-row .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--red)); }
+.an-row.hit .who b { color: var(--orange); font-weight: 500; }
+.an-empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
 #matrix .cell:hover, #matrix .cell.sel { stroke: var(--text); stroke-width: 1.5; }
 .cell-pop { width: 340px; }
 .cell-pop h4 { margin: 4px 0 2px; font-size: 15px; font-weight: 500; }
