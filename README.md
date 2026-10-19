@@ -10,6 +10,10 @@ It brings together trade, weather and disruption-event data, stores it in a Hado
 processes it with Apache Spark (batch) and Kafka + Spark Structured Streaming (live), models the dependencies as a graph in Neo4j, and scores how far
 and how hard a disruption is likely to spread.
 
+![SUPPLYCHAIN-X dashboard: Typhoon Hagibis 2019 spreading through supply links from Japan](docs/img/dashboard.png)
+*Typhoon Hagibis (2019). GDACS rated it Green; our own port weather data found 162 km/h gusts in Tokyo,
+so the engine raised its severity and follows the cascade through 19 countries, hop by hop.*
+
 ## Research questions
 
 1. Can heterogeneous supply-chain, environmental and event data be integrated through distributed
@@ -66,6 +70,13 @@ More detail in [docs/architecture.md](docs/architecture.md).
   alert level from context.
 - **Dashboard** (http://localhost:8000): dot-matrix world map with the cascade spreading hop by hop, live alerts,
   a supply-network view per country, unusual trade drops, a what-if simulator and a guided tour.
+
+## Screenshots
+
+| Lower panels | Supply network of a country |
+|---|---|
+| ![Industry matrix, unusual trade drops and live alerts](docs/img/dashboard-panels.png) | ![Graph view: who Japan buys from and who depends on Japan](docs/img/graph-view.png) |
+| Which industries are exposed, unusual trade drops linked to the event (Isolation Forest), and live alerts from the Spark stream - here today's real disasters from the GDACS feed. | Click any country on the map: its biggest suppliers (left) and the countries that depend on it (right), from Neo4j. |
 
 ## Results at a glance
 
