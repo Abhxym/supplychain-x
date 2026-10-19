@@ -6,7 +6,7 @@ Flag thresholds are from public definitions, not tuned to our data:
     heavy_rain       >= 64.5 mm/day   India Meteorological Department "heavy rainfall"
     very_heavy_rain  >= 115.6 mm/day  IMD "very heavy rainfall"
     storm_gust       >= 89 km/h       Beaufort force 10 ("storm")
-    extreme_heat     >= 40 C max temperature
+    extreme_heat     >= 40 C max temperature (kept as its own column, not part of severe_day)
     thunderstorm     WMO weather codes 95, 96, 99
 """
 from pyspark.sql import functions as F
@@ -34,7 +34,9 @@ weather = (weather
     .withColumn("storm_gust", F.col("gust_max_kmh") >= 89)
     .withColumn("extreme_heat", F.col("temp_max_c") >= 40)
     .withColumn("thunderstorm", F.col("weather_code").isin(95, 96, 99))
-    .withColumn("severe_day", F.col("very_heavy_rain") | F.col("storm_gust") | F.col("extreme_heat")))
+    # heat is NOT part of severe_day: a fixed 40C line flags every summer day in Dubai (301 days at
+    # Jebel Ali) although Gulf ports are built for it. Rain and storm winds disrupt ports anywhere.
+    .withColumn("severe_day", F.col("very_heavy_rain") | F.col("storm_gust")))
 
 n = weather.count()
 per_port = weather.groupBy("wpi_number").count()
