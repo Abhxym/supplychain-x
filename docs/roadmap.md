@@ -10,12 +10,12 @@ Each phase ends with something that runs. Don't start the next one until the cur
 
 **Install:** Docker Desktop, Git, Python 3.11/3.12, Java 17 (needed later for Spark).
 
-## Phase 1 – Ingestion (bronze layer)
-- Countries + HS commodity reference tables
-- UN Comtrade downloader (needs free API key) → `data/bronze/trade/`
-- Open-Meteo historical weather for port/country coordinates → `data/bronze/weather/`
-- GDACS disaster events → `data/bronze/events/`
-- World Port Index → `data/bronze/ports/`
+## Phase 1 – Ingestion (bronze layer)  🔄 in progress
+- [x] Countries + HS commodity reference tables
+- [x] UN Comtrade downloader → `data/bronze/trade/` (20 countries, 12 HS chapters, 2019-23, ~330k rows)
+- [ ] Open-Meteo historical weather for port/country coordinates → `data/bronze/weather/`
+- [ ] GDACS disaster events → `data/bronze/events/`
+- [ ] World Port Index → `data/bronze/ports/`
 
 Rule: bronze is never edited by hand. Every file comes from a script, so the whole lake can be rebuilt.
 
