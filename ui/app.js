@@ -15,7 +15,7 @@ const FALLBACK = { SGP: [103.82, 1.35], HKG: [114.17, 22.3], BHR: [50.55, 26.07]
 const state = { countries: new Map(), lonlat: new Map(), features: [], featureByIso: new Map(),
                 dotsByIso: new Map(), baseDots: [[], [], []], dotIndex: new Map(), step: 5,
                 levels: new Map(), result: null, events: [], stats: null, activeId: null, sim: [],
-                showArcs: true, showMarkers: true, animStart: 0, raf: null };
+                showArcs: true, showMarkers: true, showValues: false, animStart: 0, raf: null };
 const $ = s => document.querySelector(s);
 const fmt = d3.format(",");
 const short = v => v >= 10000 ? d3.format(".3s")(v) : fmt(v);
@@ -60,6 +60,7 @@ async function init() {
   drawHero();
   drawAlertCards();
   bindUI();
+  bindHelp();
   new ResizeObserver(() => { layoutMap(); if (state.result) render(state.result, false); }).observe($("#map"));
   window.addEventListener("resize", () => { drawHero(); if (state.result) { drawMatrix(state.result); markWeek(state.result); } });
 
@@ -290,7 +291,7 @@ function drawOverlay(r, animated) {
 function drawStack(r, animated) {
   const top = r.affected.slice(0, 5);
   $("#stack").innerHTML = `
-    <div class="head"><span>Most affected</span><span class="warn">
+    <div class="head"><span>Most affected<button class="info" data-info="affected" aria-label="What is this?">i</button></span><span class="warn">
       <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1L11 10H1Z" fill="${C.orange}"/></svg>${r.summary.countries}</span></div>
     ${top.map((a, i) => `<div class="person" style="animation-delay:${animated ? a.hop * HOP + 300 + i * 90 : 0}ms"
         title="${a.chains[0].path.join(" → ")} · ${a.chains[0].product}">
@@ -298,7 +299,7 @@ function drawStack(r, animated) {
       <span class="nm">${a.name}</span><span class="sc" style="color:${heat(a.score)}">${a.score.toFixed(2)}</span></div>`).join("")}`;
 }
 
-function gauge(el, { label, value, max, text, sub, color }) {
+function gauge(el, { label, value, max, text, sub, color, info }) {
   const cx = 66, cy = 60, R = 46, a0 = -Math.PI * 0.75, a1 = Math.PI * 0.75;
   const frac = Math.max(0, Math.min(1, value / max));
   const arc = d3.arc().innerRadius(R - 1.5).outerRadius(R + 1.5).cornerRadius(2);
@@ -319,7 +320,7 @@ function gauge(el, { label, value, max, text, sub, color }) {
       <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${C.text}" stroke-width="1.5" stroke-linecap="round"/>
       <circle cx="${cx}" cy="${cy}" r="3" fill="${C.text}"/>
     </svg>
-    <div class="g-l">${label}</div>
+    <div class="g-l">${label}<button class="info" data-info="${info}" aria-label="What is this?">i</button></div>
     <div class="g-v">${text}<small>${sub}</small></div>`;
 }
 
@@ -331,11 +332,12 @@ function drawGauges(r) {
   const p = r.parameters;
   const raised = p.severity_used > p.severity_in;
   gauge(a, { label: "Countries in cascade", value: r.summary.countries, max: state.countries.size,
-             text: r.summary.countries, sub: "/ " + state.countries.size, color: C.teal });
-  gauge(b, { label: "Peak impact score", value: peak, max: 0.5, text: peak.toFixed(2), sub: "/ 1.0", color: heat(peak) });
+             text: r.summary.countries, sub: "/ " + state.countries.size, color: C.teal, info: "g1" });
+  gauge(b, { label: "Peak impact score", value: peak, max: 0.5, text: peak.toFixed(2), sub: "/ 1.0", color: heat(peak),
+             info: "g2" });
   gauge(c, { label: raised ? "Severity (weather-raised)" : "Severity used", value: p.severity_used, max: 1,
              text: p.severity_used.toFixed(2), sub: raised ? "was " + p.severity_in.toFixed(2) : "/ 1.0",
-             color: raised ? C.cyan : C.orange });
+             color: raised ? C.cyan : C.orange, info: "g3" });
 }
 
 function drawInsight(r) {
@@ -427,7 +429,9 @@ function drawMatrix(r) {
   const cells = new Map();
   r.affected.forEach(a => a.chains.forEach(ch => ch.industries.forEach(ind => {
     const k = ind + "|" + a.iso3;
-    if (!cells.has(k) || ch.score > cells.get(k).score) cells.set(k, { ind, iso3: a.iso3, score: ch.score, product: ch.product });
+    // keep the chain behind each cell, so a click can explain where the number comes from
+    if (!cells.has(k) || ch.score > cells.get(k).score)
+      cells.set(k, { ind, iso3: a.iso3, name: a.name, score: ch.score, product: ch.product, chain: ch });
   })));
   const totals = d3.rollup([...cells.values()], v => d3.sum(v, c => c.score), c => c.ind);
   const rows = [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(d => d[0]);
@@ -448,19 +452,32 @@ function drawMatrix(r) {
     .attr("x", d => x(d)).attr("y", h - 4).attr("text-anchor", "middle").attr("fill", C.muted).attr("font-size", 10).text(d => d);
 
   const data = [...cells.values()].filter(c => rows.includes(c.ind) && cols.includes(c.iso3));
+  const radius = c => 2.5 + c.score * 13;
   svg.append("g").selectAll("circle").data(data).join("circle")
+    .attr("class", "cell")
     .attr("cx", c => x(c.iso3)).attr("cy", c => y(c.ind)).attr("r", 0)
     .attr("fill", c => heat(c.score)).attr("fill-opacity", 0.9)
-    .call(sel => sel.append("title").text(c => `${c.iso3} · ${c.ind} (via ${c.product}): ${c.score.toFixed(2)}`))
-    .transition().delay((_, i) => 200 + i * 15).duration(400).attr("r", c => 2.5 + c.score * 13);
+    .attr("tabindex", 0).attr("role", "button")
+    .attr("aria-label", c => `${c.name}, ${c.ind}: impact ${c.score.toFixed(2)}. Open breakdown`)
+    .on("click", (e, c) => { e.stopPropagation(); showCell(c, e); })
+    .on("keydown", (e, c) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showCell(c, e); } })
+    .transition().delay((_, i) => 200 + i * 15).duration(400).attr("r", radius);
 
-  // label the hottest cell, like an incident chip
-  const hot = d3.greatest(data, c => c.score);
+  // "Values" switch: print every score next to its dot
+  if (state.showValues) {
+    svg.append("g").selectAll("text").data(data).join("text")
+      .attr("x", c => x(c.iso3)).attr("y", c => y(c.ind) - radius(c) - 3)
+      .attr("text-anchor", "middle").attr("font-size", 9).attr("fill", C.text).attr("pointer-events", "none")
+      .text(c => c.score.toFixed(2));
+  }
+
+  // label the hottest cell, like an incident chip (not needed when every value is printed)
+  const hot = !state.showValues && d3.greatest(data, c => c.score);
   if (hot) {
     const label = `${hot.iso3} · ${hot.ind}  ${hot.score.toFixed(2)}`;
     const lw = label.length * 6 + 22;
     const lx = Math.min(w - lw - 4, x(hot.iso3) + 14), ly = Math.max(2, y(hot.ind) - 30);
-    const g = svg.append("g");
+    const g = svg.append("g").attr("pointer-events", "none");  // the chip must not block clicks on dots under it
     g.append("rect").attr("x", lx).attr("y", ly).attr("width", lw).attr("height", 22).attr("rx", 11)
       .attr("fill", "rgba(16,21,21,.95)").attr("stroke", "rgba(255,138,61,.5)");
     g.append("circle").attr("cx", lx + 11).attr("cy", ly + 11).attr("r", 3.5).attr("fill", C.orange);
@@ -624,6 +641,214 @@ function bindUI() {
   });
   $("#map").addEventListener("mousemove", hover);
   $("#map").addEventListener("mouseleave", () => { $("#tip").hidden = true; });
+}
+
+// ================================================================ help for newcomers
+// Plain-language explanations shown by the "i" buttons. Written for someone seeing this for the first time.
+const INFO = {
+  map: ["The cascade map",
+    "Each dot is a piece of land. <b>Red</b> is where the disaster hit. Countries that <b>buy from it</b> light up, " +
+    "coloured by how hard they're hit (teal = mild, red = severe). <b>Lines</b> are the trade links the impact travels along; " +
+    "thicker means a bigger share of that country's supply. Hover any country for its details."],
+  intensity: ["Disaster intensity",
+    "How many disasters <b>GDACS</b> (the UN/EU disaster alert system) recorded each week, 2019–2023. " +
+    "<b>Orange dots</b> mark weeks with serious (Orange or Red) events. The <b>red line</b> is the week of the event you're viewing."],
+  severe: ["Severe port weather",
+    "Days per month when one of our 45 major ports had <b>storm-force wind</b> (gusts ≥ 89 km/h) or <b>very heavy rain</b> " +
+    "(≥ 115.6 mm), from Open-Meteo weather records. The triangles mark the three worst months."],
+  affected: ["Most affected",
+    "The countries hit hardest, ranked by <b>impact score</b> from 0 (no effect) to 1 (maximum). Hover a row to see the trade chain behind it."],
+  g1: ["Countries in cascade",
+    "How many countries the disruption reaches by following trade links, out of the 102 countries in our trade graph."],
+  g2: ["Peak impact score",
+    "The highest impact score of any affected country. The score adds up 5 factors - <b>severity</b>, <b>dependency</b>, " +
+    "<b>trade value</b>, <b>how central</b> the country is in world trade, and <b>duration</b> - and fades by 40% with every hop."],
+  g3: ["Severity",
+    "How bad the event itself was, 0 to 1. The GDACS alert level sets the start (Green 0.3, Orange 0.6, Red 1.0). " +
+    "<b>Cyan</b> means our own weather data found storm winds or extreme rain at a major port during the event and raised it."],
+  matrix: ["Cascade by industry",
+    "Rows are industries, columns are affected countries. A dot means that industry in that country depends on a product " +
+    "the disruption cuts off. <b>Bigger and redder = higher impact.</b> <b>Click any dot</b> to see exactly why, and how the score was calculated."],
+  alerts: ["Events by alert level",
+    "All 48,802 disasters from 2019–2023, by GDACS alert level. <b>Weather-raised</b> counts the events where our own " +
+    "port weather data showed it was worse than GDACS said, so the engine raised the severity."],
+};
+
+function showInfo(btn) {
+  const [title, text] = INFO[btn.dataset.info] || ["", ""];
+  const tip = $("#info-tip");
+  tip.innerHTML = `<span class="t">${title}</span>${text}`;
+  tip.hidden = false;
+  const b = btn.getBoundingClientRect();
+  const left = Math.min(window.innerWidth - tip.offsetWidth - 12, Math.max(12, b.left - 20));
+  const below = b.bottom + 8 + tip.offsetHeight < window.innerHeight;
+  tip.style.left = left + "px";
+  tip.style.top = (below ? b.bottom + 8 : b.top - tip.offsetHeight - 8) + "px";
+}
+const hideInfo = () => { $("#info-tip").hidden = true; };
+
+// ---------------------------------------------------------------- matrix cell breakdown
+function showCell(c, e) {
+  const r = state.result, ch = c.chain, k = ch.components;
+  const w = r.parameters.weights, decay = r.parameters.decay;
+  d3.selectAll("#matrix .cell").classed("sel", d => d === c);
+  const names = iso => (state.countries.get(iso) || {}).name || iso;
+  const steps = ch.path.map((iso, i) => i === 0 ? `<b>${names(iso)}</b>` : ` → <b>${names(iso)}</b> (${pct(ch.shares[i - 1])})`).join("");
+  const why = ch.hop === 1
+    ? `<b>${c.name}</b> gets <b>${pct(ch.shares[0])}</b> of its ${ch.product.toLowerCase()} from <b>${names(ch.path[0])}</b>, ` +
+      `and ${ch.product.toLowerCase()} feeds its <b>${c.ind.toLowerCase()}</b> industry.`
+    : `The shortage travels ${steps}. Multiplying the shares gives a dependency of <b>${pct(ch.dependency)}</b> on ` +
+      `${names(ch.path[0])} for ${ch.product.toLowerCase()}, which feeds <b>${c.ind.toLowerCase()}</b>.`;
+  const parts = [
+    ["Severity", "severity", k.S], ["Dependency", "dependency", k.D], ["Trade value", "exposure", k.E],
+    ["Centrality", "centrality", k.C], ["Duration", "duration", k.T],
+  ];
+  const rows = parts.map(([label, key, v]) => `
+    <div class="comp"><span>${label} <span class="muted">×${w[key].toFixed(2)}</span></span>
+      <span class="cbar"><i style="width:${Math.min(100, v * 100)}%;background:${C.teal}"></i></span><span class="v">${v.toFixed(2)}</span></div>`).join("");
+  const sum = parts.reduce((s, [, key, v]) => s + w[key] * v, 0);
+  const terms = parts.map(([, key, v]) => `${w[key].toFixed(2)}×${v.toFixed(2)}`).join(" + ");
+  const pop = $("#cell-pop");
+  pop.innerHTML = `
+    <button class="x" aria-label="Close" onclick="document.getElementById('cell-pop').hidden = true">×</button>
+    <div class="kicker">${ch.hop} hop${ch.hop > 1 ? "s" : ""} from the disaster</div>
+    <h4>${c.name} · ${c.ind}</h4>
+    <div style="font-size:24px;font-weight:300;color:${heat(c.score)}">${c.score.toFixed(2)} <span class="muted" style="font-size:12px">impact score</span></div>
+    <p class="why">${why}</p>
+    ${rows}
+    <div class="formula-line">(${terms}) × ${decay}<sup>${ch.hop}</sup><br>= ${sum.toFixed(3)} × ${Math.pow(decay, ch.hop).toFixed(2)} = <b>${c.score.toFixed(2)}</b></div>`;
+  pop.hidden = false;
+  const box = e.target.getBoundingClientRect ? e.target.getBoundingClientRect() : { left: e.clientX, top: e.clientY, right: e.clientX };
+  const left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(12, box.right + 12));
+  const top = Math.max(12, Math.min(window.innerHeight - pop.offsetHeight - 12, box.top - pop.offsetHeight / 2));
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+
+// ---------------------------------------------------------------- every value in a table
+function openTable() {
+  const r = state.result;
+  if (!r) return;
+  const names = iso => (state.countries.get(iso) || {}).name || iso;
+  $("#tbl-title").textContent = $("#map-title").textContent;
+  $("#tbl-help").innerHTML = `<b>Impact</b> (0–1) combines severity, dependency, trade value, centrality and duration, and fades by
+    ${Math.round((1 - r.parameters.decay) * 100)}% per hop. <b>Dependency</b> is the share of this country's imports of that product
+    that traces back to the hit country (shares multiplied along the chain). <b>Trade value</b> is the yearly value of the last link.`;
+  const head = `<tr><th>#</th><th>Country</th><th>Hops</th><th>Impact</th><th>Strongest chain</th><th>Product</th>
+    <th>Dependency</th><th>Trade value</th><th>Industries exposed</th></tr>`;
+  const src = r.sources.map(s => `<tr><td></td><td><span class="dotc" style="background:${C.red}"></span>${s.name}</td>
+    <td class="num">0</td><td class="num" style="color:${C.red}">hit</td><td colspan="5" class="ind">
+    ${s.ports.length ? "Major ports: " + s.ports.map(p => p.name).join(", ") : "Directly hit"}</td></tr>`).join("");
+  const rows = r.affected.map((a, i) => {
+    const ch = a.chains[0];
+    const inds = [...new Set(a.chains.flatMap(x => x.industries))].join(", ");
+    return `<tr><td class="num">${i + 1}</td>
+      <td><span class="dotc" style="background:${heat(a.score)}"></span>${a.name}</td>
+      <td class="num">${a.hop}</td><td class="num" style="color:${heat(a.score)}">${a.score.toFixed(3)}</td>
+      <td>${ch.path.map(names).join(" → ")}</td><td>${ch.product}</td>
+      <td class="num">${pct(ch.dependency)}</td><td class="num">${d3.format("$.3s")(ch.value_usd || 0).replace("G", "B")}</td>
+      <td class="ind">${inds}</td></tr>`;
+  }).join("");
+  $("#tbl").innerHTML = `<thead>${head}</thead><tbody>${src}${rows}</tbody>`;
+  $("#table-modal").hidden = false;
+}
+
+// ---------------------------------------------------------------- welcome card + guided tour
+const TOUR = [
+  { sel: ".filters", title: "1. Pick what to look at",
+    text: "Choose one of <b>556 real disasters</b> from 2019–2023, or switch to <b>Simulator</b> and knock out any country yourself." },
+  { sel: "#map", title: "2. Watch the impact spread",
+    text: "The <b>red</b> country is where it hit. Countries that buy from it light up in waves - the redder, the harder they're hit. " +
+          "Lines are the trade links it travels along. <b>Hover</b> any country for details." },
+  { sel: "#stack", title: "3. Who is hit hardest",
+    text: "Ranked by <b>impact score</b> (0 to 1). It combines how bad the event was, how much the country depends on the " +
+          "hit country, how much trade is at stake, how central it is, and how long it lasts." },
+  { sel: ".toolbar", title: "4. How far it travelled",
+    text: "<b>Hops</b> count the steps: 1 hop = direct buyers of the hit country, 2 hops = their buyers. " +
+          "The impact fades at every hop. Press <b>↻</b> to replay the animation." },
+  { sel: "#gauges", title: "5. The key numbers",
+    text: "How many countries are affected, the highest impact score, and how severe the event was. " +
+          "<b>Cyan</b> means our own weather data showed it was worse than the official alert." },
+  { sel: "#insight", title: "6. The story in one sentence",
+    text: "A plain-language summary. For Typhoon Hagibis: the official alert said <b>minor</b>, but our port weather data " +
+          "recorded <b>162 km/h</b> winds at Tokyo - so the system raised it. One data source alone would have missed it." },
+  { sel: ".hero .mini", title: "7. Five years of context",
+    text: "Every disaster per week since 2019. The <b>red line</b> shows where the current event sits in time." },
+  { sel: ".matrix-card", title: "8. Which industries are exposed",
+    text: "Industries (rows) in affected countries (columns). <b>Click any dot</b> for the full breakdown, " +
+          "<b>Values</b> to print every number, or <b>All values</b> for the complete table." },
+  { sel: ".alerts-card", title: "9. The big picture",
+    text: "All 48,802 disasters by alert level. The last card counts events our weather data found to be worse than reported." },
+  { sel: "#help-btn", title: "That's it!",
+    text: "Press <b>?</b> any time to see this again. Every panel also has a small <b>i</b> button with an explanation." },
+];
+let tourAt = 0;
+
+function tourShow(i) {
+  tourAt = i;
+  const step = TOUR[i];
+  const target = document.querySelector(step.sel);
+  $("#tour").hidden = false;
+  target.scrollIntoView({ block: "center", behavior: "instant" });
+  requestAnimationFrame(() => {
+    const b = target.getBoundingClientRect(), pad = 6;
+    Object.assign($("#tour-spot").style, { left: b.left - pad + "px", top: b.top - pad + "px",
+                                           width: b.width + pad * 2 + "px", height: b.height + pad * 2 + "px" });
+    $("#tour-step").textContent = `Step ${i + 1} of ${TOUR.length}`;
+    $("#tour-title").textContent = step.title;
+    $("#tour-text").innerHTML = step.text;
+    $("#tour-back").hidden = i === 0;
+    $("#tour-next").textContent = i === TOUR.length - 1 ? "Done" : "Next";
+    // place the card next to the spotlight: right, left, below or above - whichever fits
+    const card = $("#tour-card"), cw = card.offsetWidth, chh = card.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    let left, top;
+    if (b.right + 16 + cw < vw) { left = b.right + 16; top = b.top; }
+    else if (b.left - 16 - cw > 0) { left = b.left - 16 - cw; top = b.top; }
+    else if (b.bottom + 16 + chh < vh) { left = b.left; top = b.bottom + 16; }
+    else { left = b.left; top = b.top - chh - 16; }
+    card.style.left = Math.max(12, Math.min(vw - cw - 12, left)) + "px";
+    card.style.top = Math.max(12, Math.min(vh - chh - 12, top)) + "px";
+  });
+}
+function tourEnd() { $("#tour").hidden = true; window.scrollTo({ top: 0 }); }
+
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode: just show it again next time */ } }
+
+function bindHelp() {
+  // "i" buttons: hover or focus on desktop, tap on touch screens
+  document.addEventListener("mouseover", e => { const b = e.target.closest(".info"); if (b) showInfo(b); });
+  document.addEventListener("mouseout", e => { if (e.target.closest(".info")) hideInfo(); });
+  document.addEventListener("focusin", e => { const b = e.target.closest(".info"); if (b) showInfo(b); });
+  document.addEventListener("focusout", e => { if (e.target.closest(".info")) hideInfo(); });
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".info");
+    if (b) { e.stopPropagation(); showInfo(b); } else hideInfo();
+  }, true);
+
+  $("#mx-values").addEventListener("click", e => {
+    state.showValues = !state.showValues;
+    e.currentTarget.setAttribute("aria-pressed", state.showValues);
+    if (state.result) drawMatrix(state.result);
+  });
+  $("#mx-table").addEventListener("click", openTable);
+
+  document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => {
+    if (e.target === m || e.target.closest("[data-close]")) { m.hidden = true; if (m.id === "welcome") storeSet("scx-welcome", "1"); }
+  }));
+  $("#help-btn").addEventListener("click", e => { e.stopPropagation(); $("#welcome").hidden = false; });
+  $("#tour-start").addEventListener("click", () => { $("#welcome").hidden = true; storeSet("scx-welcome", "1"); tourShow(0); });
+  $("#tour-next").addEventListener("click", () => tourAt < TOUR.length - 1 ? tourShow(tourAt + 1) : tourEnd());
+  $("#tour-back").addEventListener("click", () => tourShow(Math.max(0, tourAt - 1)));
+  $("#tour-skip").addEventListener("click", tourEnd);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") { tourEnd(); document.querySelectorAll(".modal").forEach(m => { m.hidden = true; }); }
+    if (!$("#tour").hidden && e.key === "ArrowRight") $("#tour-next").click();
+    if (!$("#tour").hidden && e.key === "ArrowLeft" && tourAt > 0) $("#tour-back").click();
+  });
+  window.addEventListener("resize", () => { if (!$("#tour").hidden) tourShow(tourAt); });
+
+  if (!storeGet("scx-welcome")) $("#welcome").hidden = false;  // first visit
 }
 
 init().catch(err => { console.error(err); $("#map-title").textContent = "Could not load: " + err.message; });

@@ -31,6 +31,7 @@
         <input id="q" type="search" placeholder="Search events" autocomplete="off">
         <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5"/></svg>
       </label>
+      <button class="icon-btn help" id="help-btn" title="How to read this dashboard" aria-label="How to read this dashboard">?</button>
       <a class="icon-btn" href="/docs" title="API docs" target="_blank" rel="noopener">
         <svg width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6"/></svg>
       </a>
@@ -51,13 +52,13 @@
       </div>
 
       <div class="mini">
-        <div class="mini-h">Disaster intensity by week</div>
+        <div class="mini-h">Disaster intensity by week <button class="info" data-info="intensity" aria-label="What is this?">i</button></div>
         <svg id="hist" class="mini-chart"></svg>
         <div class="mini-f"><span id="hist-min">–</span><span class="dot-sep"></span><span id="hist-max">–</span></div>
       </div>
 
       <div class="mini">
-        <div class="mini-h">Severe days at 45 major ports</div>
+        <div class="mini-h">Severe days at 45 major ports <button class="info" data-info="severe" aria-label="What is this?">i</button></div>
         <svg id="spikes" class="mini-chart tall"></svg>
         <div class="mini-f"><span>2019</span><span id="spike-max">–</span><span>2023</span></div>
       </div>
@@ -68,7 +69,13 @@
     <section class="map" id="map">
       <canvas id="dots"></canvas>
       <svg id="overlay"></svg>
-      <div class="map-title"><span class="live"></span><span id="map-title">Cascade</span></div>
+      <div class="map-title"><span class="live"></span><span id="map-title">Cascade</span>
+        <button class="info" data-info="map" aria-label="What is this?">i</button></div>
+      <div class="legend" id="legend">
+        <span class="lg"><i class="sq hit"></i>hit</span>
+        <span class="lg"><i class="ramp"></i>low &rarr; high impact</span>
+        <span class="lg"><i class="ln"></i>trade link</span>
+      </div>
       <div class="stack" id="stack"></div>
       <div class="toolbar">
         <button class="tb" id="tb-replay" title="Replay the cascade">
@@ -89,12 +96,18 @@
     <section class="gauges" id="gauges"></section>
 
     <section class="card matrix-card">
-      <div class="card-h"><span>Cascade by industry</span><span class="muted" id="mx-sub"></span></div>
+      <div class="card-h">
+        <span>Cascade by industry <button class="info" data-info="matrix" aria-label="What is this?">i</button></span>
+        <span class="card-tools"><span class="muted" id="mx-sub"></span>
+          <button class="tool" id="mx-values" aria-pressed="false">Values</button>
+          <button class="tool" id="mx-table">All values</button></span>
+      </div>
       <svg id="matrix"></svg>
     </section>
 
     <section class="card alerts-card">
-      <div class="card-h"><span>Events by alert level</span><span class="muted">GDACS, 2019 – 2023</span></div>
+      <div class="card-h"><span>Events by alert level <button class="info" data-info="alerts" aria-label="What is this?">i</button></span>
+        <span class="muted">GDACS, 2019 &ndash; 2023</span></div>
       <div class="alert-grid" id="alert-grid"></div>
     </section>
   </main>
@@ -118,6 +131,48 @@
     <label class="slider">Decay per hop <output id="decay-out"></output><input id="decay" type="range" min="0.3" max="0.9" step="0.05" value="0.6"></label>
     <label class="slider">Min. link share <output id="share-out"></output><input id="share" type="range" min="0.01" max="0.3" step="0.01" value="0.05"></label>
     <button class="run" id="run">Simulate cascade</button>
+  </div>
+</div>
+
+<!-- info tooltip, matrix cell card, all-values table, welcome card, tour -->
+<div id="info-tip" class="info-tip" role="tooltip" hidden></div>
+<div id="cell-pop" class="pop cell-pop" hidden></div>
+
+<div class="modal" id="table-modal" hidden>
+  <div class="modal-card wide">
+    <div class="modal-h"><div><div class="kicker">All values</div><h3 id="tbl-title">Cascade</h3></div>
+      <button class="x" data-close aria-label="Close">&times;</button></div>
+    <p class="muted small" id="tbl-help"></p>
+    <div class="tbl-wrap"><table id="tbl"></table></div>
+  </div>
+</div>
+
+<div class="modal" id="welcome" hidden>
+  <div class="modal-card">
+    <div class="kicker">Welcome to SUPPLYCHAIN-X</div>
+    <h3>When a disaster hits one country, who else feels it?</h3>
+    <ul class="welcome-list">
+      <li><b>The red country</b> is where a real disaster (2019&ndash;2023) or your simulated one hit.</li>
+      <li><b>Countries that buy from it light up</b>: the redder, the harder they are hit. Then their own buyers, one step (&ldquo;hop&rdquo;) further.</li>
+      <li><b>Every number comes from real data</b>: UN trade figures, disaster alerts and port weather, processed with Hadoop, Spark, Kafka and Neo4j.</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="run" id="tour-start">Take the 1-minute tour</button>
+      <button class="ghost-btn" data-close>Explore on my own</button>
+    </div>
+  </div>
+</div>
+
+<div id="tour" hidden>
+  <div class="spot" id="tour-spot"></div>
+  <div class="tour-card" id="tour-card" role="dialog" aria-live="polite">
+    <div class="kicker" id="tour-step"></div>
+    <h4 id="tour-title"></h4>
+    <p id="tour-text"></p>
+    <div class="tour-actions">
+      <button class="ghost-btn" id="tour-skip">Skip</button>
+      <span><button class="ghost-btn" id="tour-back">Back</button><button class="run small-run" id="tour-next">Next</button></span>
+    </div>
   </div>
 </div>
 
