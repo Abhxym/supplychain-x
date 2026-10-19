@@ -28,6 +28,22 @@ NON_COUNTRY_PARTNERS = {0, 129, 221, 290, 471, 472, 473, 488, 492, 527, 536, 568
                         636, 637, 697, 830, 837, 838, 839, 872, 879, 899}
 TAIWAN_CODE = 490
 
+# Our 12 HS chapters: short names (the official ones run to 200 characters) and a broad category
+HS_CHAPTERS = {
+    "10": ("Cereals", "Food"),
+    "15": ("Fats and oils", "Food"),
+    "27": ("Fuels and oils", "Energy"),
+    "29": ("Organic chemicals", "Chemicals"),
+    "30": ("Pharmaceuticals", "Chemicals"),
+    "39": ("Plastics", "Chemicals"),
+    "72": ("Iron and steel", "Metals"),
+    "76": ("Aluminium", "Metals"),
+    "84": ("Machinery", "Machinery and electronics"),
+    "85": ("Electronics and electrical equipment", "Machinery and electronics"),
+    "87": ("Vehicles", "Transport"),
+    "90": ("Optical and medical instruments", "Machinery and electronics"),
+}
+
 # World Port Index writes country names its own way. These are the ones that don't match the
 # UN Comtrade names exactly; everything else is matched by name.
 WPI_COUNTRY_ISO3 = {
