@@ -44,6 +44,23 @@ HS_CHAPTERS = {
     "90": ("Optical and medical instruments", "Machinery and electronics"),
 }
 
+# Which industries use each product group. A deliberately simple mapping (a real one would come
+# from input-output tables) so the impact engine can go one step past countries.
+PRODUCT_INDUSTRIES = {
+    "10": ["Food processing"],
+    "15": ["Food processing"],
+    "27": ["Energy", "Transport and logistics"],
+    "29": ["Chemicals", "Pharmaceuticals"],
+    "30": ["Healthcare"],
+    "39": ["Packaging", "Automotive"],
+    "72": ["Construction", "Automotive", "Machinery"],
+    "76": ["Automotive", "Packaging", "Construction"],
+    "84": ["Machinery", "Manufacturing"],
+    "85": ["Electronics", "Automotive", "Telecom"],
+    "87": ["Automotive", "Transport and logistics"],
+    "90": ["Healthcare", "Electronics"],
+}
+
 # World Port Index writes country names its own way. These are the ones that don't match the
 # UN Comtrade names exactly; everything else is matched by name.
 WPI_COUNTRY_ISO3 = {
