@@ -23,7 +23,8 @@ and how hard a disruption is likely to spread.
 ```
  Historical data ──> HDFS data lake (Parquet: bronze/silver/gold) ──┐
                                                                    ├──> Spark ──> PostgreSQL / Neo4j / ML ──> Impact engine ──> FastAPI ──> D3 dashboard
- Live events ─────> Kafka topics ──> Structured Streaming ─────────┘
+ Live GDACS feed ─┐                                                │
+ (or a replay) ───┴─> Kafka topics ──> Structured Streaming ───────┘
 ```
 
 More detail in [docs/architecture.md](docs/architecture.md).
@@ -43,14 +44,46 @@ More detail in [docs/architecture.md](docs/architecture.md).
 | Frontend       | D3.js + plain JavaScript (no build step; see docs/architecture.md) |
 | Tests          | pytest + FastAPI TestClient (`python -m pytest -q`) |
 
-## Data sources (V1 core)
+## Data sources
 
-- **UN Comtrade** – bilateral trade by commodity (HS code)
-- **Open-Meteo historical API** – weather observations
-- **GDACS / EM-DAT** – natural disaster events
-- **World Port Index** – port locations
+| Source | What | Scope |
+|---|---|---|
+| **UN Comtrade** | bilateral trade by product (HS chapter) | 20 reporting economies x 12 chapters, 2019-2023, ~330k rows |
+| **GDACS** | natural disasters (earthquakes, cyclones, floods, droughts, volcanoes, wildfires) | 48,827 events 2019-2023, plus a live feed of current events |
+| **Open-Meteo** (historical API) | daily weather at the 45 biggest container ports | 2019-2023, 82k port-days |
+| **World Port Index** | port locations | 3,805 ports |
 
-Extensions (later): GDELT news events, AIS/maritime data.
+## What it does
+
+- **Data lake + batch:** raw downloads land in HDFS (bronze), Spark cleans them with data-quality checks that
+  stop a job on bad data (silver) and builds dependency tables (gold) - see [data-quality.md](docs/data-quality.md).
+- **Streaming, live:** disaster events flow through Kafka into Spark Structured Streaming, which validates them
+  (bad messages -> dead-letter queue), enriches them with ports and downstream dependents, and raises alerts.
+  Events come from GDACS live (polled every 10 minutes) or from a replay of 2019-2023 history.
+- **Graph + impact engine:** Neo4j holds who supplies whom with what share; the engine follows the links up to
+  3 hops and scores every country and industry in the cascade, with every score explainable.
+- **Machine learning:** Isolation Forest flags unusual trade drops; a side classifier tries to guess an event's
+  alert level from context.
+- **Dashboard** (http://localhost:8000): dot-matrix world map with the cascade spreading hop by hop, live alerts,
+  a supply-network view per country, unusual trade drops, a what-if simulator and a guided tour.
+
+## Results at a glance
+
+| Question | Result | Details |
+|---|---|---|
+| Spark vs MapReduce (same job, same hardware) | Spark **2.0x faster** (17.4 s vs 34.7 s; MapReduce in C++) | [experiments.md](docs/experiments.md) E6 |
+| Spark tuning | Parquet 2.9x faster than CSV; broadcast join 1.7x; 8 shuffle partitions 2x faster than 1 | E0-E5 |
+| Lose a DataNode | **0 blocks missing**, all 653,082 rows read back with identical checksums | [hdfs-failover-demo.md](docs/hdfs-failover-demo.md) |
+| Kill the streaming job mid-stream | resumed from its checkpoint: 1,297 events, **none twice**; 3 of 3 broken messages caught | [streaming.md](docs/streaming.md) |
+| Our weather data vs GDACS | raised the severity of 50 of 556 events (Typhoon Hagibis: Green -> 0.8 after 162 km/h gusts at Tokyo) | [graph-and-impact.md](docs/graph-and-impact.md) |
+| Does the impact score match real disruptions? | trade dependency helps; graph centrality shows a "hub bias"; with fair statistics **no score variant is proven better** - the engine measures exposure, not confirmed damage | [experiments.md](docs/experiments.md) E9 |
+| Unusual trade drops | the strangest are sanctions and wars (Russian fuel 2023, Ukrainian cereals 2022), not storms | E7 |
+| Guess alert level from context | macro F1 0.45 vs 0.33 for "always Green" - context can't replace the event's physical size | E8 |
+
+**Research questions, answered briefly:** (1) yes - the pipeline integrates the sources in batch and live and
+identifies the downstream countries and industries, each with a traceable chain; (2) the graph-based score is
+far more *interpretable* (path + five factors per score), but it was not shown to be more *accurate* on the
+small set of documented cases we could find.
 
 ## Running it
 
@@ -127,6 +160,24 @@ python -m pytest -q
 
 More on what to look at where: [docs/where-to-look.md](docs/where-to-look.md).
 
+## Docs
+
+| Doc | About |
+|---|---|
+| [architecture.md](docs/architecture.md) | the pieces and why each one is there |
+| [data-quality.md](docs/data-quality.md) | what the silver/gold checks test and what they caught |
+| [experiments.md](docs/experiments.md) | all experiments: Spark tuning, MapReduce vs Spark, ML, score validation |
+| [streaming.md](docs/streaming.md) | Kafka + Structured Streaming, crash test, live mode |
+| [graph-and-impact.md](docs/graph-and-impact.md) | the Neo4j graph, the impact score, the dashboard |
+| [hdfs-failover-demo.md](docs/hdfs-failover-demo.md) | losing a DataNode without losing data |
+| [demo-script.md](docs/demo-script.md) | a timed 10-minute demo with a backup plan |
+| [roadmap.md](docs/roadmap.md) | phase by phase, what was built |
+
 ## Project status
 
-Work in progress – see [docs/roadmap.md](docs/roadmap.md) for the plan and what's done so far.
+**Feature-complete** (phases 0-7 and live mode). Phase 8 - the write-up - is in progress, and only fixes go in
+from here. See [docs/roadmap.md](docs/roadmap.md).
+
+**Limits, honestly:** 20 reporting economies (trade links only point into those 20), yearly trade data (short
+disruptions vanish in a year of totals), 2023 trade links used for every year, weather data to 2023, a small
+documented ground truth, and one laptop playing the part of a cluster.
