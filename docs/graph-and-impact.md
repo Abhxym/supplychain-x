@@ -72,9 +72,18 @@ variants (severity only / + exposure / + centrality) against historical cases.
 - "What if China is disrupted": all 19 other tracked economies are hit at the first hop, led by India
   (58% of its electronics from China) - China is central enough that everyone depends on it directly.
 
-## Cascade Explorer (UI)
+## Disruption Intelligence dashboard (UI)
 
-`api/main.py` (FastAPI) + `ui/` (D3 world map). Historical events or a what-if simulator; the hit country
-pulses red, supply links animate outward hop by hop, countries are coloured by impact; the right panel
-shows the weather evidence, the ranking with each dependency chain, and the exposed industries.
-API docs at http://localhost:8000/docs. Becomes the centre of the full dashboard in phase 7.
+`api/main.py` (FastAPI) + `ui/` (D3, canvas). http://localhost:8000, API docs at /docs.
+
+- **Dot-matrix world map** (canvas): every land pixel on a 5 px grid is a dot. Countries in the cascade
+  heat up wave by wave (teal -> yellow -> orange -> red by impact) over a blurred glow; supply links animate
+  out hop by hop on an SVG layer; the hit country pulses with a warning marker, the three hardest-hit get
+  orange markers, and our weather evidence appears as an incident chip ("162 km/h gusts · Tokyo Ko").
+  Countries are found per dot with a bounding-box pre-check + `d3.geoContains`, built once per resize.
+- **Left:** weekly disaster intensity 2019-2023 (orange tips = orange/red weeks, red line = selected event)
+  and monthly severe port-weather days as spikes; an insight card explaining the result in one sentence.
+- **Right:** gauge rings - countries in the cascade, peak impact, severity (cyan when our weather data raised it).
+- **Bottom:** industry x country dot matrix of the cascade, and events by alert level.
+- **Top bar:** event picker (556 scored events, searchable) and the what-if simulator (countries, severity,
+  duration, decay, minimum link share).

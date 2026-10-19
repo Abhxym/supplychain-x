@@ -95,7 +95,7 @@ python scripts/kafka_topics.py --reset
 python scripts/spark_run.py stream_events
 python -m ingestion.replay_producer --from 2019-09-01 --to 2019-10-31 --speed 86400 --bad 3
 
-# phase 5: graph, impact engine, Cascade Explorer UI - see docs/graph-and-impact.md
+# phase 5: graph, impact engine, dashboard - see docs/graph-and-impact.md
 python scripts/spark_run.py export_graph
 python -m graph.load_neo4j
 python -m graph.algorithms
@@ -107,7 +107,7 @@ python -m uvicorn api.main:app --port 8000      # open http://localhost:8000
 |------------------|--------------------------|
 | HDFS NameNode    | http://localhost:9870    |
 | Spark master     | http://localhost:8081    |
-| **Cascade Explorer** | **http://localhost:8000** |
+| **Dashboard**    | **http://localhost:8000** |
 | API docs         | http://localhost:8000/docs |
 | Spark job (live) | http://localhost:4040    |
 | YARN (phase 3)   | http://localhost:8088    |
