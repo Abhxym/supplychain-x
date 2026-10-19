@@ -16,6 +16,7 @@ import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 from confluent_kafka.admin import AdminClient, NewTopic
 from dotenv import load_dotenv
@@ -41,10 +42,17 @@ if "--reset" in sys.argv:
     subprocess.run(["docker", "exec", "scx-namenode", "hdfs", "dfs", "-rm", "-r", "-f", "-skipTrash",
                     "/lake/checkpoints"], capture_output=True)
     print("deleted streaming checkpoints")
+    # Only what the streams wrote. A TRUNCATE ... CASCADE here would also wipe impact_runs/impact_scores
+    # (they point at events), i.e. every scored event the dashboard shows.
     subprocess.run(["docker", "exec", "scx-postgres", "psql", "-U", os.getenv("POSTGRES_USER"),
-                    "-d", os.getenv("POSTGRES_DB"), "-c", "TRUNCATE alerts, events RESTART IDENTITY CASCADE"],
+                    "-d", os.getenv("POSTGRES_DB"), "-c",
+                    "TRUNCATE alerts RESTART IDENTITY; "
+                    "DELETE FROM events e WHERE e.source IN ('gdacs-replay', 'gdacs-live') "
+                    "AND NOT EXISTS (SELECT 1 FROM impact_runs r WHERE r.event_id = e.event_id) "
+                    "AND NOT EXISTS (SELECT 1 FROM impact_scores s WHERE s.event_id = e.event_id)"],
                    capture_output=True)
-    print("emptied events and alerts tables")
+    (Path(__file__).resolve().parent.parent / "data" / "live" / "sent.json").unlink(missing_ok=True)
+    print("emptied alerts, removed streamed events (scored events kept), live feed will resend")
 
 existing = set(admin.list_topics(timeout=10).topics)
 todo = [t for t in TOPICS if t.topic not in existing]
