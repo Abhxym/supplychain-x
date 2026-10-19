@@ -186,8 +186,7 @@ More on what to look at where: [docs/where-to-look.md](docs/where-to-look.md).
 
 ## Project status
 
-**Feature-complete** (phases 0-7 and live mode). Phase 8 - the write-up - is in progress, and only fixes go in
-from here. See [docs/roadmap.md](docs/roadmap.md).
+**Feature-complete** (phases 0-7 and live mode). See [docs/roadmap.md](docs/roadmap.md).
 
 **Limits, honestly:** 20 reporting economies (trade links only point into those 20), yearly trade data (short
 disruptions vanish in a year of totals), 2023 trade links used for every year, weather data to 2023, a small
