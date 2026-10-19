@@ -60,19 +60,21 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .icon-btn:hover { color: var(--text); }
 
 /* ---------- grid ---------- */
+/* rows grow with their content and the page scrolls - never squeeze panels into each other.
+   The top row fills the screen above the cards when there's room, but never drops below 600px. */
 .grid {
-  display: grid; height: calc(100vh - 64px);
+  display: grid; min-height: calc(100vh - 64px);
   grid-template-columns: 290px 1fr 1fr 210px;
-  grid-template-rows: minmax(0, 1fr) 248px;
+  grid-template-rows: minmax(max(600px, calc(100vh - 64px - 290px)), auto) auto;
   grid-template-areas: "hero map map gauges" "matrix matrix alerts alerts";
 }
-.hero { grid-area: hero; padding: 26px 22px 18px; display: flex; flex-direction: column; gap: 22px; min-height: 0; }
-.map { grid-area: map; position: relative; min-height: 0; overflow: hidden; }
-.gauges { grid-area: gauges; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 18px 18px 18px 0; }
+.hero { grid-area: hero; padding: 26px 22px 18px; display: flex; flex-direction: column; gap: 22px; }
+.map { grid-area: map; position: relative; min-height: 560px; overflow: hidden; }
+.gauges { grid-area: gauges; display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px; padding: 18px 18px 18px 0; }
 .matrix-card { grid-area: matrix; }
 .alerts-card { grid-area: alerts; }
 .card { margin: 0 14px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--glass);
-  padding: 16px 18px; min-height: 0; display: flex; flex-direction: column; }
+  padding: 16px 18px; min-height: 260px; display: flex; flex-direction: column; }
 .matrix-card { margin-right: 7px; }
 .alerts-card { margin-left: 7px; }
 .card-h { display: flex; justify-content: space-between; align-items: baseline; font-weight: 500; margin-bottom: 10px; }
@@ -143,14 +145,14 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 .gauge .g-v small { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 4px; }
 
 /* ---------- matrix + alert cards ---------- */
-#matrix { flex: 1; width: 100%; min-height: 0; }
-.alert-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; min-height: 0; }
+#matrix { flex: 1; width: 100%; min-height: 190px; }
+.alert-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .acard { border-radius: 14px; background: var(--glass); border: 1px solid var(--line); padding: 14px; display: flex;
   flex-direction: column; justify-content: space-between; min-width: 0; }
 .acard .top { display: flex; align-items: center; gap: 10px; font-size: 12px; }
 .acard .ico { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--glass-2); flex: none; }
 .acard .lbl2 { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
-.acard .big { font-size: 26px; font-weight: 300; letter-spacing: -.02em; white-space: nowrap; }
+.acard .big { font-size: clamp(20px, 1.8vw, 26px); font-weight: 300; letter-spacing: -.02em; white-space: nowrap; }
 .acard .big small { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 2px; }
 
 /* ---------- popovers ---------- */
