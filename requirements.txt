@@ -1,0 +1,8 @@
+# use python 3.11 or 3.12 - pyspark and confluent-kafka lag behind the newest python
+python-dotenv==1.0.1
+confluent-kafka==2.6.1
+psycopg[binary]==3.2.3
+neo4j==5.26.0
+requests==2.32.3
+pandas==2.2.3
+pyarrow==18.1.0
