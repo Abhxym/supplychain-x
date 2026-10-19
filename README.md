@@ -78,6 +78,9 @@ python scripts/spark_run.py silver
 
 # gold: dependencies, concentration, risk features -> HDFS, then loaded into Postgres
 python scripts/spark_run.py gold
+
+# switch off a DataNode and prove nothing is lost (~3 min)
+python scripts/hdfs_failover_demo.py
 ```
 
 | Service          | URL                      |

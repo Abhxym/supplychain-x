@@ -28,7 +28,7 @@ Data issues found, to fix in silver:
   coordinates are strings
 - Comtrade: partner `W00` / code 0 is the World total row, not a country - exclude it when computing shares
 
-## Phase 2 – Hadoop + Spark ETL (silver + gold)  ✅ done (fault-tolerance demo left)
+## Phase 2 – Hadoop + Spark ETL (silver + gold)  ✅ done
 - [x] HDFS cluster in Docker: 1 NameNode + 2 DataNodes, replication 2, 1 MB blocks (demo setting, real clusters use 128 MB)
 - [x] Spark standalone cluster: 1 master + 2 workers (2 cores, 1.5 GB each), reads/writes HDFS
 - [x] `scripts/hdfs_load_bronze.py` copies the local landing zone into `hdfs:///lake/bronze`
@@ -42,7 +42,8 @@ Data issues found, to fix in silver:
       `concentration` (1,200: supplier count, HHI, top supplier) ·
       `country_event_features` (disasters per country/year, by type) · `port_weather_features` (225)
 - [x] Countries, commodities and dependencies loaded into Postgres over JDBC (Spark writes in parallel)
-- [ ] Fault tolerance demo: stop one DataNode, show the lake is still readable
+- [x] Fault tolerance demo: DataNode stopped, Spark still read all 653,082 rows with identical
+      checksums, HDFS healed itself on restart ([hdfs-failover-demo.md](hdfs-failover-demo.md))
 
 Flow: ingestion scripts → local landing zone (`data/bronze`) → HDFS `/lake/bronze` → Spark → `/lake/silver` → `/lake/gold`
 
