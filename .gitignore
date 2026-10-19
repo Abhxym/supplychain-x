@@ -29,3 +29,6 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# compiled mapreduce binaries - rebuild with scripts/build_mapreduce.py
+mapreduce/bin/

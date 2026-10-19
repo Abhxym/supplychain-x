@@ -106,6 +106,40 @@ services:
     volumes:
       - hdfs-data2:/tmp/hadoop-root
 
+  # ---------- YARN for Hadoop MapReduce (optional) ----------
+  # Only for the phase 3 MapReduce vs Spark experiment. Not started by a plain `docker compose up -d`:
+  #   docker compose --profile mapreduce up -d
+  resourcemanager:
+    image: apache/hadoop:3.4.1
+    container_name: scx-resourcemanager
+    hostname: resourcemanager
+    profiles: ["mapreduce"]
+    user: root
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - "8088:8088"   # YARN web UI
+    env_file: hadoop.env
+    volumes:
+      - ./mapreduce:/opt/scx/mapreduce:ro
+
+  nodemanager1:
+    image: apache/hadoop:3.4.1
+    container_name: scx-nodemanager1
+    profiles: ["mapreduce"]
+    user: root
+    command: ["yarn", "nodemanager"]
+    env_file: hadoop.env
+    depends_on: [resourcemanager]
+
+  nodemanager2:
+    image: apache/hadoop:3.4.1
+    container_name: scx-nodemanager2
+    profiles: ["mapreduce"]
+    user: root
+    command: ["yarn", "nodemanager"]
+    env_file: hadoop.env
+    depends_on: [resourcemanager]
+
   # ---------- Apache Spark: standalone cluster ----------
   # Master hands out work, workers run it. Jobs are submitted from the master container.
   spark-master:
