@@ -75,6 +75,9 @@ docker exec scx-spark-master /opt/spark/bin/spark-submit /opt/scx/spark_jobs/smo
 
 # phase 2: clean bronze -> silver on the Spark cluster (stops if a data-quality check fails)
 python scripts/spark_run.py silver
+
+# gold: dependencies, concentration, risk features -> HDFS, then loaded into Postgres
+python scripts/spark_run.py gold
 ```
 
 | Service          | URL                      |

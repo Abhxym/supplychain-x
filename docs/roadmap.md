@@ -28,7 +28,7 @@ Data issues found, to fix in silver:
   coordinates are strings
 - Comtrade: partner `W00` / code 0 is the World total row, not a country - exclude it when computing shares
 
-## Phase 2 – Hadoop + Spark ETL (silver + gold)  🔄 in progress
+## Phase 2 – Hadoop + Spark ETL (silver + gold)  ✅ done (fault-tolerance demo left)
 - [x] HDFS cluster in Docker: 1 NameNode + 2 DataNodes, replication 2, 1 MB blocks (demo setting, real clusters use 128 MB)
 - [x] Spark standalone cluster: 1 master + 2 workers (2 cores, 1.5 GB each), reads/writes HDFS
 - [x] `scripts/hdfs_load_bronze.py` copies the local landing zone into `hdfs:///lake/bronze`
@@ -37,8 +37,11 @@ Data issues found, to fix in silver:
       (`python scripts/spark_run.py silver`, details in [data-quality.md](data-quality.md)):
       `countries` (245, ISO3 key) · `trade` (326,775) + `trade_totals` (2,400) · `events` (48,827)
       + `event_countries` (43,785) · `ports` (3,805, all with ISO3) · `weather` (82,170, severe-day flags)
-- [ ] Features: trade_share, supplier_concentration (HHI), event_frequency, weather_severity flags
-- [ ] Dependencies table → `hdfs:///lake/gold`, loaded into Postgres
+- [x] Gold on HDFS (`python scripts/spark_run.py gold`):
+      `dependencies` (142,735: importer x product x supplier x year, trade share, rank) ·
+      `concentration` (1,200: supplier count, HHI, top supplier) ·
+      `country_event_features` (disasters per country/year, by type) · `port_weather_features` (225)
+- [x] Countries, commodities and dependencies loaded into Postgres over JDBC (Spark writes in parallel)
 - [ ] Fault tolerance demo: stop one DataNode, show the lake is still readable
 
 Flow: ingestion scripts → local landing zone (`data/bronze`) → HDFS `/lake/bronze` → Spark → `/lake/silver` → `/lake/gold`

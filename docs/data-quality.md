@@ -32,6 +32,11 @@ Worth saying in a viva - the checks exist for exactly this.
 - Spark wrote silver with 3 copies per block while HDFS was set up for 2: replication is chosen
   by the client that writes, and Spark never saw `hadoop.env`. `hdfs fsck` showed 109/109 blocks
   under-replicated. Fixed in `spark/spark-defaults.conf`, existing files fixed with `hdfs dfs -setrep`.
+- `severe_day` first included "max temperature >= 40 C". In gold, Jebel Ali (Dubai) came out as the
+  most weather-hit port with 301 severe days - but its strongest gust was only 78 km/h. Those were
+  ordinary Gulf summer days, which the port is built for. A fixed heat line doesn't suit every climate,
+  so `severe_day` is now very heavy rain or storm-force gusts only; `extreme_heat` stays as its own
+  column. A fairer heat flag would compare each port with its own normal (e.g. its 99th percentile).
 
 ## Severe-weather thresholds
 
@@ -42,5 +47,18 @@ Taken from public definitions, not tuned on our data.
 | `heavy_rain` | >= 64.5 mm/day | India Meteorological Department |
 | `very_heavy_rain` | >= 115.6 mm/day | India Meteorological Department |
 | `storm_gust` | gusts >= 89 km/h | Beaufort force 10 |
-| `extreme_heat` | max temp >= 40 C | |
+| `extreme_heat` | max temp >= 40 C (not part of `severe_day`) | |
 | `thunderstorm` | WMO weather code 95, 96, 99 | WMO |
+
+`severe_day` = `very_heavy_rain` OR `storm_gust`.
+
+## Gold checks
+
+| Table | Check |
+|---|---|
+| dependencies | every share between 0 and 1 |
+| concentration | suppliers of one importer/product never add up to more than its world total |
+| concentration | exactly 20 importers x 12 products x 5 years = 1,200 rows |
+| country_event_features | per-type counts add up to the total |
+| port_weather_features | 45 ports x 5 years = 225 rows, every port has a country |
+| Postgres load | every one of the 142,735 dependency rows arrives |
