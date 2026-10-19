@@ -69,10 +69,14 @@ Details and results: [streaming.md](streaming.md)
 - [x] Watermark: daily event counts in event time, 2 days allowed lateness
 - [x] Found: GDACS rated Typhoon Hagibis Green - our port rule still raised it
 
-## Phase 5 – Graph + impact engine
-- Load gold tables into Neo4j
-- Degree + betweenness centrality, shortest paths, optional Louvain communities
-- Cascading impact: BFS from the hit node, score per hop, store in `impact_scores`
+## Phase 5 – Graph + impact engine  ✅ done
+Details: [graph-and-impact.md](graph-and-impact.md)
+- [x] Gold -> Neo4j: 102 countries, 12 products, 13 industries, 45 ports, 3,554 SUPPLIES links (2023)
+- [x] GDS: weighted degree, betweenness (cost = -log share), PageRank, Louvain (4 trade blocs found)
+- [x] Cascading impact engine: one-product chains up to 3 hops, configurable weighted score with decay
+- [x] Weather cross-check raises severity (50 of 556 events, incl. Typhoon Hagibis)
+- [x] 556 historical events scored into `impact_scores` + `impact_runs`
+- [x] Cascade Explorer UI (FastAPI + D3): animated world map, what-if simulator
 
 ## Phase 6 – ML + validation
 - Isolation Forest on trade / weather series for anomalies
