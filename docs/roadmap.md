@@ -8,7 +8,7 @@ Each phase ends with something that runs. Don't start the next one until the cur
 - [x] Postgres schema
 - [x] Everyone can `docker compose up -d` and pass `scripts/check_services.py`
 
-**Install:** Docker Desktop, Git, Python 3.11/3.12, Java 17 (needed later for Spark).
+**Install:** Docker Desktop, Git, Python 3.11/3.12. Spark and Hadoop run in Docker - nothing else to install.
 
 ## Phase 1 – Ingestion (bronze layer)  ✅ done
 - [x] Countries + HS commodity reference tables
@@ -28,11 +28,18 @@ Data issues found, to fix in silver:
   coordinates are strings
 - Comtrade: partner `W00` / code 0 is the World total row, not a country - exclude it when computing shares
 
-## Phase 2 – Spark ETL (silver + gold)
-- Spark dev container (avoids the winutils/Hadoop pain of running Spark natively on Windows)
-- Clean, type, dedupe each source → silver, partitioned by `year` (and `country` where it helps)
-- Features: trade_share, supplier_concentration (HHI), event_frequency, weather_severity flags
-- Dependencies table → gold, loaded into Postgres
+## Phase 2 – Hadoop + Spark ETL (silver + gold)  🔄 in progress
+- [x] HDFS cluster in Docker: 1 NameNode + 2 DataNodes, replication 2, 1 MB blocks (demo setting, real clusters use 128 MB)
+- [x] Spark standalone cluster: 1 master + 2 workers (2 cores, 1.5 GB each), reads/writes HDFS
+- [x] `scripts/hdfs_load_bronze.py` copies the local landing zone into `hdfs:///lake/bronze`
+- [x] Smoke test: Spark sums world trade per year straight from HDFS on both workers
+- [ ] Clean, type, dedupe each source → `hdfs:///lake/silver`, partitioned by `year`
+      (fixes the data issues listed under phase 1)
+- [ ] Features: trade_share, supplier_concentration (HHI), event_frequency, weather_severity flags
+- [ ] Dependencies table → `hdfs:///lake/gold`, loaded into Postgres
+- [ ] Fault tolerance demo: stop one DataNode, show the lake is still readable
+
+Flow: ingestion scripts → local landing zone (`data/bronze`) → HDFS `/lake/bronze` → Spark → `/lake/silver` → `/lake/gold`
 
 ## Phase 3 – Optimization experiments
 Measure, on our own data, baseline vs:
@@ -40,6 +47,9 @@ Measure, on our own data, baseline vs:
 - broadcast join (small country/port lookups)
 - caching reused DataFrames
 - 1 / 4 / 8 / 16 shuffle partitions
+- 1 worker vs 2 workers
+- **Hadoop MapReduce vs Spark**: the same aggregation (trade value per country per commodity)
+  written once as a MapReduce job (Hadoop Streaming, Python) and once in Spark, timed on the same data
 
 Record real timings in `docs/experiments.md`. Never invent numbers.
 

@@ -20,25 +20,28 @@
 
 ```
  UN Comtrade ─┐
- Open-Meteo  ─┼─> ingestion scripts ─> bronze (raw parquet)
- GDACS       ─┤                           │ spark ETL: clean, dedupe, schema check
- Port index  ─┘                           ↓
-                                        silver (clean parquet, partitioned by year/country)
-                                          │ spark: joins, features, dependency scores
-                                          ↓
-                                        gold (analytics tables)
-                                          │
-                       ┌──────────────────┼──────────────────┐
-                       ↓                  ↓                  ↓
-                   PostgreSQL           Neo4j            ML models
-                  (API tables)     (dependency graph)  (anomaly, severity)
-                       └──────────────────┼──────────────────┘
-                                          ↓
-                                    impact engine
-                                          ↓
-                                       FastAPI ──> React dashboard
-                                          ↑
+ Open-Meteo  ─┼─> ingestion scripts ─> local landing zone (data/bronze)
+ GDACS       ─┤                                   │ hdfs dfs -put
+ Port index  ─┘                                   ↓
+                     ┌──────────── HDFS (NameNode + 2 DataNodes, replication 2) ────────────┐
+                     │  /lake/bronze  ── Spark ETL ──>  /lake/silver  ── Spark ──>  /lake/gold │
+                     │  raw parquet     clean, dedupe   clean, typed,   joins,     analytics  │
+                     │                  schema check    partitioned     features   tables     │
+                     └──────────────────────────────────────────────────────────────────────┘
+                                                                    │
+                                        ┌───────────────────────────┼──────────────────┐
+                                        ↓                           ↓                  ↓
+                                    PostgreSQL                    Neo4j            ML models
+                                   (API tables)              (dependency graph) (anomaly, severity)
+                                        └───────────────────────────┼──────────────────┘
+                                                                    ↓
+                                                              impact engine
+                                                                    ↓
+                                                                 FastAPI ──> React dashboard
+                                                                    ↑
  historical events ─> replay producer ─> Kafka ─> Spark Structured Streaming
+
+ Spark runs as a standalone cluster: 1 master + 2 workers, all in Docker.
 ```
 
 ## Why each piece is there
@@ -47,6 +50,15 @@
 Silver is cleaned and typed. Gold is shaped for the questions we ask. Parquet is columnar, so a query that
 needs 3 columns out of 40 only reads those 3. It's also compressed, and partitioning by year/country lets
 Spark skip whole folders (partition pruning).
+
+**Hadoop HDFS.** The lake lives in a distributed file system instead of a plain folder. Files are cut
+into blocks and every block is stored on 2 DataNodes. Block size is 1 MB here (real clusters use 128 MB)
+so our few-MB files visibly split; at real scale tiny blocks would overload the NameNode's memory.
+The NameNode only keeps the map of which block is where. If one DataNode dies, every block still has a
+live copy, so nothing is lost and jobs keep running. On a single laptop this gives no speed-up (both
+DataNodes share one disk); the point is the storage model, which is the same one a real cluster uses.
+We use HDFS but not the rest of Hadoop: YARN is replaced by Spark's own standalone scheduler, and
+MapReduce is only used once, as a baseline to compare Spark against (phase 3).
 
 **Spark.** All the heavy transformations (joining millions of trade rows with events, computing shares and
 windows) are written once in PySpark and run in parallel across partitions. The same DataFrame API is
