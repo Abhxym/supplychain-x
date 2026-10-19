@@ -1,0 +1,13 @@
+,,P@1,P@3,P@5,R@3,R@5,Hit@1,Hit@3
+GT1 news (all labels),A severity only,0.191,0.191,0.197,0.206,0.351,0.191,0.546
+GT1 news (all labels),B + dependency/exposure,0.25,0.25,0.3,0.312,0.562,0.25,0.5
+GT1 news (all labels),C + centrality,0.5,0.333,0.3,0.438,0.583,0.5,0.75
+GT1 news (all labels),random,0.145,0.145,0.145,0.158,0.263,0.145,0.387
+GT1 news (strong+medium),A severity only,0.126,0.126,0.126,0.191,0.319,0.126,0.348
+GT1 news (strong+medium),B + dependency/exposure,0.333,0.111,0.133,0.333,0.5,0.333,0.333
+GT1 news (strong+medium),C + centrality,0.333,0.222,0.2,0.5,0.611,0.333,0.667
+GT1 news (strong+medium),random,0.105,0.105,0.105,0.158,0.263,0.105,0.293
+GT2 trade drops,A severity only,0.211,0.2,0.2,0.124,0.208,0.211,0.418
+GT2 trade drops,B + dependency/exposure,0.295,0.273,0.282,0.179,0.334,0.295,0.523
+GT2 trade drops,C + centrality,0.136,0.212,0.305,0.121,0.34,0.136,0.432
+GT2 trade drops,random,0.197,0.197,0.197,0.127,0.212,0.197,0.411

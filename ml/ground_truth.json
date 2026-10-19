@@ -1,0 +1,78 @@
+{
+  "_about": "Known disruptions with the OTHER countries that published reports say were hit through supply chains. Only countries the engine can rank (our 20 reporting economies) are labels; others are listed in 'not_rankable'. 'confidence' is our own judgement of how directly the source ties the country to this event. Collected Oct 2026 from news/industry reports; it is small and not exhaustive - a country NOT listed was not necessarily unaffected.",
+  "cases": [
+    {
+      "id": "tohoku_2011",
+      "name": "Great East Japan earthquake and tsunami, March 2011",
+      "kind": "scenario",
+      "note": "Before our 2019-2023 window: run on today's (2023) graph, so trade links are 12 years newer than the event.",
+      "sources": ["JPN"], "severity": 1.0, "duration_days": 30,
+      "affected": {
+        "USA": {"confidence": "strong", "evidence": "GM halted its Shreveport, LA pickup plant for a week from 21 March for lack of Japanese parts",
+                "urls": ["https://wardsauto.com/general-motors/gm-to-halt-small-pickup-output-due-to-japanese-parts-shortage",
+                         "https://money.cnn.com/2011/03/25/autos/gm_truck_plant_reopening/index.htm"]},
+        "FRA": {"confidence": "strong", "evidence": "PSA Peugeot Citroen cut output at European (French) sites after Hitachi diesel-engine parts stopped; ~5,000 workers in France affected",
+                "urls": ["https://www.wardsauto.com/psa-cuts-production-some-europe-sites-japan",
+                         "https://www.industryweek.com/industry-clusters/peugeot-temporarily-lays-thousands"]},
+        "DEU": {"confidence": "strong", "evidence": "Opel cancelled shifts at Eisenach, Germany, for an electronic component sourced from Japan",
+                "urls": ["https://autonews.gasgoo.com/articles/news/component-shortages-hit-europe-car-makers-1018943"]}
+      },
+      "not_rankable": {"ESP": "Opel Zaragoza shut completely (Spain is not one of our 20 reporters)"}
+    },
+    {
+      "id": "thailand_floods_2011",
+      "name": "Thailand floods, Oct-Dec 2011",
+      "kind": "scenario",
+      "note": "Before our window: run on the 2023 graph.",
+      "sources": ["THA"], "severity": 1.0, "duration_days": 60,
+      "affected": {
+        "JPN": {"confidence": "strong", "evidence": "IHS: beyond Thailand the worst-impacted country is Japan (Japanese makers' Thai plants and parts)",
+                "urls": ["https://supplychaindigital.com/logistics/thailand-flooding-supply-chain-breakdown"]},
+        "USA": {"confidence": "medium", "evidence": "Toyota slowed US car production for lack of Thai-made parts; hard-drive shortage hit US PC makers",
+                "urls": ["https://www.ft.lk/International/thai-floods-curb-production-of-cars-electronics/49-52238",
+                         "https://www.bloomberg.com/news/articles/2011-11-17/after-the-floods-a-sea-of-disk-drive-shortages"]}
+      }
+    },
+    {
+      "id": "texas_freeze_2021",
+      "name": "Texas winter storm (Uri), February 2021",
+      "kind": "scenario",
+      "note": "Cold waves are not in GDACS, so this is run as a what-if on the USA.",
+      "sources": ["USA"], "severity": 1.0, "duration_days": 14,
+      "affected": {
+        "MEX": {"confidence": "medium", "evidence": "Petrochemical shortage after the freeze affected Toyota production in Mexico (as well as Kentucky and West Virginia)",
+                "urls": ["https://www.thevibes.com/index.php/articles/business/21263/congested-ports-and-supply-chain-woes-hit-us-factories-and-stores"]},
+        "CAN": {"confidence": "weak", "evidence": "Honda halted most US and Canadian car plants citing supply-chain issues including the storm; storm's share unclear",
+                "urls": ["https://wolfstreet.com/2021/03/17/shortages-of-semiconductors-plastics-backlogs-at-container-ports-and-the-texas-freeze-wreak-havoc-on-automakers"]}
+      }
+    },
+    {
+      "id": "turkiye_eq_2023",
+      "name": "Kahramanmaras earthquakes, Turkiye, February 2023",
+      "kind": "gdacs", "event_key": "EQ-1357372",
+      "sources": ["TUR"],
+      "affected": {
+        "DEU": {"confidence": "weak", "evidence": "Turkish textile exports to the EU fell 26% in Jan-Feb 2023; source names the EU, not member states, and textiles are not one of our 12 products", "urls": ["https://textalks.com/textile-exports-fall-in-february-as-turkey-recovers-from-earthquake/"]},
+        "FRA": {"confidence": "weak", "evidence": "as DEU", "urls": ["https://textalks.com/textile-exports-fall-in-february-as-turkey-recovers-from-earthquake/"]},
+        "ITA": {"confidence": "weak", "evidence": "as DEU", "urls": ["https://textalks.com/textile-exports-fall-in-february-as-turkey-recovers-from-earthquake/"]},
+        "NLD": {"confidence": "weak", "evidence": "as DEU", "urls": ["https://textalks.com/textile-exports-fall-in-february-as-turkey-recovers-from-earthquake/"]}
+      }
+    }
+  ],
+  "negative_controls": [
+    {
+      "id": "hagibis_2019", "event_key": "TC-1000611", "sources": ["JPN"],
+      "finding": "Subaru's Gunma plant stopped for about a week, but its Indiana plant was not affected and North American supply was not short; Toyota called its disruption minimal. No overseas importer reported as hit.",
+      "urls": ["https://just-auto.com/news/subaru-production-suspended-after-typhoon-hagibis",
+               "https://automotivelogistics.media/oems/typhoon-forces-subaru-to-halt-production-at-gunma/39432.article"]
+    }
+  ],
+  "excluded": {
+    "ida_2021": "Large Louisiana petrochemical shutdowns (16% of US ethylene, 41% of PVC) but no report found naming a foreign country hit. spglobal.com 2021-08-31",
+    "ian_2022": "No report found naming a foreign country hit.",
+    "henan_floods_2021": "Foxconn said its main Zhengzhou iPhone plant saw no direct impact. freemalaysiatoday.com 2021-07-23",
+    "malaysia_floods_2021": "Port Klang and Shah Alam factories (incl. BE Semiconductor's plant) disrupted; no downstream country named. malaymail.com 2021-12-20",
+    "hinnamnor_2022": "POSCO Pohang steelworks flooded, but in KOREA - GDACS lists only Japan for this storm; reported knock-on was to Korean shipyards (domestic). koreatimes.co.kr 2022-09-06",
+    "taiwan_drought_2021": "TSMC repeatedly said production was not affected, so it is not a confirmed disruption. fortune.com 2021-06-12"
+  }
+}

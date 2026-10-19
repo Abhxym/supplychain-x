@@ -1,0 +1,205 @@
+gt,case,variant,n_ranked,n_truth,truth_reached,top5,P@1,R@1,Hit@1,P@3,R@3,Hit@3,P@5,R@5,Hit@5
+GT1 news (all labels),tohoku_2011,A severity only,19,3,3,THA KOR ARE IDN SAU,0.143,0.048,0.143,0.143,0.143,0.396,0.143,0.238,0.604
+GT1 news (all labels),tohoku_2011,B + dependency/exposure,19,3,3,THA KOR ARE IDN SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT1 news (all labels),tohoku_2011,C + centrality,19,3,3,CHN THA KOR USA* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.333,1.0
+GT1 news (all labels),tohoku_2011,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
+GT1 news (all labels),thailand_floods_2011,A severity only,19,2,2,VNM MYS SGP USA* IDN,0.182,0.091,0.182,0.182,0.273,0.491,0.182,0.455,0.727
+GT1 news (all labels),thailand_floods_2011,B + dependency/exposure,19,2,2,MYS VNM SGP USA* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT1 news (all labels),thailand_floods_2011,C + centrality,19,2,2,CHN USA* MYS VNM IDN,0.0,0.0,0.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT1 news (all labels),thailand_floods_2011,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT1 news (all labels),texas_freeze_2021,A severity only,19,2,2,MEX* CAN* JPN NLD SGP,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT1 news (all labels),texas_freeze_2021,B + dependency/exposure,19,2,2,MEX* CAN* JPN NLD SGP,1.0,0.5,1.0,0.667,1.0,1.0,0.4,1.0,1.0
+GT1 news (all labels),texas_freeze_2021,C + centrality,19,2,2,MEX* CAN* CHN JPN BRA,1.0,0.5,1.0,0.667,1.0,1.0,0.4,1.0,1.0
+GT1 news (all labels),texas_freeze_2021,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT1 news (all labels),turkiye_eq_2023,A severity only,19,4,4,ARE ITA* GBR FRA* DEU*,0.333,0.083,0.333,0.333,0.25,1.0,0.36,0.45,1.0
+GT1 news (all labels),turkiye_eq_2023,B + dependency/exposure,19,4,4,GBR ITA* ARE DEU* FRA*,0.0,0.0,0.0,0.333,0.25,1.0,0.6,0.75,1.0
+GT1 news (all labels),turkiye_eq_2023,C + centrality,19,4,4,ITA* GBR ARE CHN DEU*,1.0,0.25,1.0,0.333,0.25,1.0,0.4,0.5,1.0
+GT1 news (all labels),turkiye_eq_2023,random,19,4,4,,0.211,0.053,0.211,0.211,0.158,0.53,0.211,0.263,0.742
+GT1 news (strong+medium),tohoku_2011,A severity only,19,3,3,THA KOR ARE IDN SAU,0.143,0.048,0.143,0.143,0.143,0.396,0.143,0.238,0.604
+GT1 news (strong+medium),tohoku_2011,B + dependency/exposure,19,3,3,THA KOR ARE IDN SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT1 news (strong+medium),tohoku_2011,C + centrality,19,3,3,CHN THA KOR USA* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.333,1.0
+GT1 news (strong+medium),tohoku_2011,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
+GT1 news (strong+medium),thailand_floods_2011,A severity only,19,2,2,VNM MYS SGP USA* IDN,0.182,0.091,0.182,0.182,0.273,0.491,0.182,0.455,0.727
+GT1 news (strong+medium),thailand_floods_2011,B + dependency/exposure,19,2,2,MYS VNM SGP USA* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT1 news (strong+medium),thailand_floods_2011,C + centrality,19,2,2,CHN USA* MYS VNM IDN,0.0,0.0,0.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT1 news (strong+medium),thailand_floods_2011,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT1 news (strong+medium),texas_freeze_2021,A severity only,19,1,1,MEX* CAN JPN NLD SGP,0.053,0.053,0.053,0.053,0.158,0.158,0.053,0.263,0.263
+GT1 news (strong+medium),texas_freeze_2021,B + dependency/exposure,19,1,1,MEX* CAN JPN NLD SGP,1.0,1.0,1.0,0.333,1.0,1.0,0.2,1.0,1.0
+GT1 news (strong+medium),texas_freeze_2021,C + centrality,19,1,1,MEX* CAN CHN JPN BRA,1.0,1.0,1.0,0.333,1.0,1.0,0.2,1.0,1.0
+GT1 news (strong+medium),texas_freeze_2021,random,19,1,1,,0.053,0.053,0.053,0.053,0.158,0.158,0.053,0.263,0.263
+GT2 trade drops,FL-1000227,A severity only,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1000227,B + dependency/exposure,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1000227,C + centrality,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1000227,random,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000552,A severity only,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000552,B + dependency/exposure,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000552,C + centrality,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000552,random,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,DR-1013327,A severity only,18,1,0,IDN CHN BRA VNM SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,DR-1013327,B + dependency/exposure,18,1,0,IDN CHN VNM KOR BRA,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,DR-1013327,C + centrality,18,1,0,CHN IDN BRA SAU VNM,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,DR-1013327,random,18,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000559,A severity only,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000559,B + dependency/exposure,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000559,C + centrality,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000559,random,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1178759,A severity only,1,2,0,GBR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1178759,B + dependency/exposure,1,2,0,GBR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1178759,C + centrality,1,2,0,GBR,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1178759,random,1,2,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1180592,A severity only,0,2,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1180592,B + dependency/exposure,0,2,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1180592,C + centrality,0,2,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1180592,random,0,2,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1182839,A severity only,19,2,2,IND ARE SGP SAU BRA,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,EQ-1182839,B + dependency/exposure,19,2,2,IND ARE SGP BRA SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1182839,C + centrality,19,2,2,IND BRA ARE SAU IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1182839,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,FL-1100113,A severity only,19,2,2,IND ARE SGP SAU BRA,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,FL-1100113,B + dependency/exposure,19,2,2,IND ARE SGP BRA SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1100113,C + centrality,19,2,2,IND BRA ARE SAU IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1100113,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,TC-1000582,A severity only,18,3,3,IND ARE SGP SAU BRA,0.167,0.056,0.167,0.167,0.167,0.442,0.167,0.278,0.65
+GT2 trade drops,TC-1000582,B + dependency/exposure,18,3,3,IND ARE SGP BRA SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000582,C + centrality,18,3,3,IND BRA ARE SAU IDN*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.333,1.0
+GT2 trade drops,TC-1000582,random,18,3,3,,0.167,0.056,0.167,0.167,0.167,0.442,0.167,0.278,0.65
+GT2 trade drops,TC-1000593,A severity only,18,3,3,IND ARE SGP SAU BRA,0.167,0.056,0.167,0.167,0.167,0.442,0.167,0.278,0.65
+GT2 trade drops,TC-1000593,B + dependency/exposure,18,3,3,IND ARE SGP BRA SAU,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000593,C + centrality,18,3,3,IND BRA ARE SAU IDN*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.333,1.0
+GT2 trade drops,TC-1000593,random,18,3,3,,0.167,0.056,0.167,0.167,0.167,0.442,0.167,0.278,0.65
+GT2 trade drops,TC-1000772,A severity only,20,2,2,THA* IND IDN JPN VNM,0.182,0.091,0.182,0.182,0.273,0.491,0.182,0.455,0.727
+GT2 trade drops,TC-1000772,B + dependency/exposure,20,2,2,THA* JPN IND IDN CHN,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000772,C + centrality,20,2,2,CHN THA* JPN IDN IND,0.0,0.0,0.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000772,random,20,2,2,,0.1,0.05,0.1,0.1,0.15,0.284,0.1,0.25,0.447
+GT2 trade drops,TC-1000636,A severity only,20,1,1,IDN MYS VNM* CHN IND,0.0,0.0,0.0,0.048,0.143,0.143,0.057,0.286,0.286
+GT2 trade drops,TC-1000636,B + dependency/exposure,20,1,1,IDN CHN MYS IND VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,1.0,1.0
+GT2 trade drops,TC-1000636,C + centrality,20,1,1,IDN CHN USA MYS VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,1.0,1.0
+GT2 trade drops,TC-1000636,random,20,1,1,,0.05,0.05,0.05,0.05,0.15,0.15,0.05,0.25,0.25
+GT2 trade drops,TC-1000738,A severity only,19,8,8,MEX* CAN* JPN NLD SGP*,0.421,0.053,0.421,0.421,0.158,0.83,0.421,0.263,0.96
+GT2 trade drops,TC-1000738,B + dependency/exposure,19,8,8,MEX* CAN* JPN NLD SGP*,1.0,0.125,1.0,0.667,0.25,1.0,0.6,0.375,1.0
+GT2 trade drops,TC-1000738,C + centrality,19,8,8,MEX* CAN* CHN* JPN BRA*,1.0,0.125,1.0,1.0,0.375,1.0,0.8,0.5,1.0
+GT2 trade drops,TC-1000738,random,19,8,8,,0.421,0.053,0.421,0.421,0.158,0.83,0.421,0.263,0.96
+GT2 trade drops,TC-1000741,A severity only,20,2,2,IDN MYS VNM* CHN IND,0.0,0.0,0.0,0.048,0.071,0.143,0.057,0.143,0.286
+GT2 trade drops,TC-1000741,B + dependency/exposure,20,2,2,IDN CHN MYS IND VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000741,C + centrality,20,2,2,IDN CHN USA MYS VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000741,random,20,2,2,,0.1,0.05,0.1,0.1,0.15,0.284,0.1,0.25,0.447
+GT2 trade drops,TC-1000666,A severity only,20,2,2,IDN MYS VNM* CHN IND,0.0,0.0,0.0,0.048,0.071,0.143,0.057,0.143,0.286
+GT2 trade drops,TC-1000666,B + dependency/exposure,20,2,2,IDN CHN MYS IND VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000666,C + centrality,20,2,2,IDN CHN USA MYS VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000666,random,20,2,2,,0.1,0.05,0.1,0.1,0.15,0.284,0.1,0.25,0.447
+GT2 trade drops,TC-1000667,A severity only,19,3,3,ARE* SAU SGP* MYS* BRA,0.2,0.067,0.2,0.2,0.2,0.516,0.2,0.333,0.736
+GT2 trade drops,TC-1000667,B + dependency/exposure,19,3,3,ARE* SAU SGP* MYS* BRA,1.0,0.333,1.0,0.667,0.667,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000667,C + centrality,19,3,3,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.333,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000667,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
+GT2 trade drops,TC-1000673,A severity only,19,3,3,ARE* SAU SGP* MYS* BRA,0.2,0.067,0.2,0.2,0.2,0.516,0.2,0.333,0.736
+GT2 trade drops,TC-1000673,B + dependency/exposure,19,3,3,ARE* SAU SGP* MYS* BRA,1.0,0.333,1.0,0.667,0.667,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000673,C + centrality,19,3,3,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.333,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000673,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
+GT2 trade drops,TC-1000702,A severity only,19,5,5,IND ARE SGP* SAU* BRA,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,TC-1000702,B + dependency/exposure,19,5,5,IND ARE SGP* BRA SAU*,0.0,0.0,0.0,0.333,0.2,1.0,0.4,0.4,1.0
+GT2 trade drops,TC-1000702,C + centrality,19,5,5,IND BRA ARE SAU* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.2,1.0
+GT2 trade drops,TC-1000702,random,19,5,5,,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,TC-1000705,A severity only,18,6,6,IND ARE SGP* SAU* BRA,0.333,0.056,0.333,0.333,0.167,0.73,0.333,0.278,0.908
+GT2 trade drops,TC-1000705,B + dependency/exposure,18,6,6,IND ARE SGP* BRA SAU*,0.0,0.0,0.0,0.333,0.167,1.0,0.4,0.333,1.0
+GT2 trade drops,TC-1000705,C + centrality,18,6,6,IND BRA ARE SAU* IDN*,0.0,0.0,0.0,0.0,0.0,0.0,0.4,0.333,1.0
+GT2 trade drops,TC-1000705,random,18,6,6,,0.333,0.056,0.333,0.333,0.167,0.73,0.333,0.278,0.908
+GT2 trade drops,TC-1000706,A severity only,18,6,6,IND ARE SGP* SAU* BRA,0.333,0.056,0.333,0.333,0.167,0.73,0.333,0.278,0.908
+GT2 trade drops,TC-1000706,B + dependency/exposure,18,6,6,IND ARE SGP* BRA SAU*,0.0,0.0,0.0,0.333,0.167,1.0,0.4,0.333,1.0
+GT2 trade drops,TC-1000706,C + centrality,18,6,6,IND BRA ARE SAU* IDN*,0.0,0.0,0.0,0.0,0.0,0.0,0.4,0.333,1.0
+GT2 trade drops,TC-1000706,random,18,6,6,,0.333,0.056,0.333,0.333,0.167,0.73,0.333,0.278,0.908
+GT2 trade drops,TC-1000726,A severity only,18,10,10,CAN* JPN NLD SGP* BRA*,0.556,0.056,0.556,0.556,0.167,0.931,0.556,0.278,0.993
+GT2 trade drops,TC-1000726,B + dependency/exposure,18,10,10,CAN* JPN NLD SGP* BRA*,1.0,0.1,1.0,0.333,0.1,1.0,0.6,0.3,1.0
+GT2 trade drops,TC-1000726,C + centrality,18,10,10,CAN* CHN* JPN BRA* NLD,1.0,0.1,1.0,0.667,0.2,1.0,0.6,0.3,1.0
+GT2 trade drops,TC-1000726,random,18,10,10,,0.556,0.056,0.556,0.556,0.167,0.931,0.556,0.278,0.993
+GT2 trade drops,TC-1000734,A severity only,19,2,2,VNM* MYS SGP USA IDN,0.182,0.091,0.182,0.182,0.273,0.491,0.182,0.455,0.727
+GT2 trade drops,TC-1000734,B + dependency/exposure,19,2,2,MYS VNM* SGP USA IDN,0.0,0.0,0.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000734,C + centrality,19,2,2,CHN USA MYS VNM* IDN,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000734,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,TC-1000736,A severity only,20,2,2,IDN MYS VNM* CHN IND,0.0,0.0,0.0,0.048,0.071,0.143,0.057,0.143,0.286
+GT2 trade drops,TC-1000736,B + dependency/exposure,20,2,2,IDN CHN MYS IND VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000736,C + centrality,20,2,2,IDN CHN USA MYS VNM*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000736,random,20,2,2,,0.1,0.05,0.1,0.1,0.15,0.284,0.1,0.25,0.447
+GT2 trade drops,TC-1000747,A severity only,19,3,3,ARE* SAU SGP* MYS* BRA,0.2,0.067,0.2,0.2,0.2,0.516,0.2,0.333,0.736
+GT2 trade drops,TC-1000747,B + dependency/exposure,19,3,3,ARE* SAU SGP* MYS* BRA,1.0,0.333,1.0,0.667,0.667,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000747,C + centrality,19,3,3,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.333,1.0,0.6,1.0,1.0
+GT2 trade drops,TC-1000747,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
+GT2 trade drops,TC-1000782,A severity only,19,5,5,ARE* SAU SGP* MYS* BRA,0.25,0.05,0.25,0.25,0.15,0.607,0.25,0.25,0.819
+GT2 trade drops,TC-1000782,B + dependency/exposure,19,5,5,ARE* SAU SGP* MYS* BRA,1.0,0.2,1.0,0.667,0.4,1.0,0.6,0.6,1.0
+GT2 trade drops,TC-1000782,C + centrality,19,5,5,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.2,1.0,0.6,0.6,1.0
+GT2 trade drops,TC-1000782,random,19,5,5,,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,EQ-1269679,A severity only,19,13,13,IND ARE* SGP* SAU* BRA*,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,EQ-1269679,B + dependency/exposure,19,13,13,IND ARE* SGP* BRA* SAU*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,EQ-1269679,C + centrality,19,13,13,IND BRA* ARE* SAU* IDN*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,EQ-1269679,random,19,13,13,,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,VO-1000023,A severity only,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,VO-1000023,B + dependency/exposure,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,VO-1000023,C + centrality,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,VO-1000023,random,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000784,A severity only,19,5,5,ARE* SAU SGP* MYS* BRA,0.267,0.053,0.267,0.267,0.16,0.637,0.267,0.267,0.846
+GT2 trade drops,TC-1000784,B + dependency/exposure,19,5,5,ARE* SAU SGP* MYS* BRA,1.0,0.2,1.0,0.667,0.4,1.0,0.6,0.6,1.0
+GT2 trade drops,TC-1000784,C + centrality,19,5,5,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.2,1.0,0.6,0.6,1.0
+GT2 trade drops,TC-1000784,random,19,5,5,,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,FL-1100902,A severity only,19,5,5,ARE* SAU SGP* MYS* BRA,0.267,0.053,0.267,0.267,0.16,0.637,0.267,0.267,0.846
+GT2 trade drops,FL-1100902,B + dependency/exposure,19,5,5,ARE* SAU SGP* MYS* BRA,1.0,0.2,1.0,0.667,0.4,1.0,0.6,0.6,1.0
+GT2 trade drops,FL-1100902,C + centrality,19,5,5,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.2,1.0,0.6,0.6,1.0
+GT2 trade drops,FL-1100902,random,19,5,5,,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,FL-1100932,A severity only,19,13,13,IND ARE* SGP* SAU* BRA*,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,FL-1100932,B + dependency/exposure,19,13,13,IND ARE* SGP* BRA* SAU*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,FL-1100932,C + centrality,19,13,13,IND BRA* ARE* SAU* IDN*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,FL-1100932,random,19,13,13,,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,FL-1100977,A severity only,19,5,5,ARE* SAU SGP* MYS* BRA,0.267,0.053,0.267,0.267,0.16,0.637,0.267,0.267,0.846
+GT2 trade drops,FL-1100977,B + dependency/exposure,19,5,5,ARE* SAU SGP* MYS* BRA,1.0,0.2,1.0,0.667,0.4,1.0,0.6,0.6,1.0
+GT2 trade drops,FL-1100977,C + centrality,19,5,5,SAU ARE* USA SGP* MYS*,0.0,0.0,0.0,0.333,0.2,1.0,0.6,0.6,1.0
+GT2 trade drops,FL-1100977,random,19,5,5,,0.263,0.053,0.263,0.263,0.158,0.624,0.263,0.263,0.828
+GT2 trade drops,TC-1000814,A severity only,19,1,1,USA CAN BRA SAU NLD,0.0,0.0,0.0,0.0,0.0,0.0,0.013,0.067,0.067
+GT2 trade drops,TC-1000814,B + dependency/exposure,19,1,1,USA CAN BRA SAU SGP,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000814,C + centrality,19,1,1,USA BRA CAN SAU CHN,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000814,random,19,1,1,,0.053,0.053,0.053,0.053,0.158,0.158,0.053,0.263,0.263
+GT2 trade drops,TC-1000818,A severity only,19,6,6,MEX CAN* JPN NLD SGP,0.316,0.053,0.316,0.316,0.158,0.705,0.316,0.263,0.889
+GT2 trade drops,TC-1000818,B + dependency/exposure,19,6,6,MEX CAN* JPN NLD SGP,0.0,0.0,0.0,0.333,0.167,1.0,0.2,0.167,1.0
+GT2 trade drops,TC-1000818,C + centrality,19,6,6,MEX CAN* CHN JPN BRA*,0.0,0.0,0.0,0.333,0.167,1.0,0.4,0.333,1.0
+GT2 trade drops,TC-1000818,random,19,6,6,,0.316,0.053,0.316,0.316,0.158,0.705,0.316,0.263,0.889
+GT2 trade drops,TC-1000824,A severity only,19,13,13,IND ARE* SGP* SAU* BRA*,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,TC-1000824,B + dependency/exposure,19,13,13,IND ARE* SGP* BRA* SAU*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,TC-1000824,C + centrality,19,13,13,IND BRA* ARE* SAU* IDN*,0.0,0.0,0.0,0.667,0.154,1.0,0.8,0.308,1.0
+GT2 trade drops,TC-1000824,random,19,13,13,,0.684,0.053,0.684,0.684,0.158,0.979,0.684,0.263,0.999
+GT2 trade drops,EQ-1298872,A severity only,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1298872,B + dependency/exposure,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1298872,C + centrality,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,EQ-1298872,random,0,1,0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000853,A severity only,20,1,1,IDN MYS VNM CHN IND,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000853,B + dependency/exposure,20,1,1,IDN CHN MYS IND VNM,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000853,C + centrality,20,1,1,IDN CHN USA MYS VNM,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000853,random,20,1,1,,0.05,0.05,0.05,0.05,0.15,0.15,0.05,0.25,0.25
+GT2 trade drops,FL-1101522,A severity only,19,1,1,ARE MYS FRA GBR THA,0.0,0.0,0.0,0.0,0.0,0.0,0.02,0.1,0.1
+GT2 trade drops,FL-1101522,B + dependency/exposure,19,1,1,ARE MYS FRA GBR JPN*,0.0,0.0,0.0,0.0,0.0,0.0,0.2,1.0,1.0
+GT2 trade drops,FL-1101522,C + centrality,19,1,1,ARE MYS FRA GBR CHN,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1101522,random,19,1,1,,0.053,0.053,0.053,0.053,0.158,0.158,0.053,0.263,0.263
+GT2 trade drops,FL-1101659,A severity only,18,2,1,IDN CAN USA VNM MYS,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1101659,B + dependency/exposure,18,2,1,IDN CAN USA MYS THA,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1101659,C + centrality,18,2,1,IDN CAN USA MYS THA,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,FL-1101659,random,18,2,1,,0.056,0.028,0.056,0.056,0.083,0.167,0.056,0.139,0.278
+GT2 trade drops,FL-1101664,A severity only,19,12,12,IND ARE* SGP SAU BRA*,0.632,0.053,0.632,0.632,0.158,0.964,0.632,0.263,0.998
+GT2 trade drops,FL-1101664,B + dependency/exposure,19,12,12,IND ARE* SGP BRA* SAU,0.0,0.0,0.0,0.333,0.083,1.0,0.4,0.167,1.0
+GT2 trade drops,FL-1101664,C + centrality,19,12,12,IND BRA* ARE* SAU IDN*,0.0,0.0,0.0,0.667,0.167,1.0,0.6,0.25,1.0
+GT2 trade drops,FL-1101664,random,19,12,12,,0.632,0.053,0.632,0.632,0.158,0.964,0.632,0.263,0.998
+GT2 trade drops,TC-1000916,A severity only,19,2,2,USA* MEX GBR IDN ITA,0.143,0.071,0.143,0.143,0.214,0.429,0.143,0.357,0.714
+GT2 trade drops,TC-1000916,B + dependency/exposure,19,2,2,USA* IDN GBR CHN ITA,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000916,C + centrality,19,2,2,USA* CHN IDN GBR ITA,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000916,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,TC-1000922,A severity only,20,2,2,IDN* MYS VNM CHN IND,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000922,B + dependency/exposure,20,2,2,IDN* CHN MYS IND VNM,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000922,C + centrality,20,2,2,IDN* CHN USA MYS VNM,1.0,0.5,1.0,0.333,0.5,1.0,0.2,0.5,1.0
+GT2 trade drops,TC-1000922,random,20,2,2,,0.1,0.05,0.1,0.1,0.15,0.284,0.1,0.25,0.447
+GT2 trade drops,TC-1000923,A severity only,19,9,9,MEX* CAN* JPN* NLD SGP*,0.474,0.053,0.474,0.474,0.158,0.876,0.474,0.263,0.978
+GT2 trade drops,TC-1000923,B + dependency/exposure,19,9,9,MEX* CAN* JPN* NLD SGP*,1.0,0.111,1.0,1.0,0.333,1.0,0.8,0.444,1.0
+GT2 trade drops,TC-1000923,C + centrality,19,9,9,MEX* CAN* CHN* JPN* BRA*,1.0,0.111,1.0,1.0,0.333,1.0,1.0,0.556,1.0
+GT2 trade drops,TC-1000923,random,19,9,9,,0.474,0.053,0.474,0.474,0.158,0.876,0.474,0.263,0.978
+GT2 trade drops,TC-1000940,A severity only,19,2,2,USA CAN BRA SAU NLD,0.0,0.0,0.0,0.0,0.0,0.0,0.027,0.067,0.133
+GT2 trade drops,TC-1000940,B + dependency/exposure,19,2,2,USA CAN BRA SAU SGP,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000940,C + centrality,19,2,2,USA BRA CAN SAU CHN,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+GT2 trade drops,TC-1000940,random,19,2,2,,0.105,0.053,0.105,0.105,0.158,0.298,0.105,0.263,0.468
+GT2 trade drops,EQ-1347183,A severity only,19,3,3,MYS VNM CHN* IND ARE,0.214,0.071,0.214,0.214,0.214,0.547,0.214,0.357,0.769
+GT2 trade drops,EQ-1347183,B + dependency/exposure,19,3,3,MYS CHN* VNM IND ARE,0.0,0.0,0.0,0.333,0.333,1.0,0.2,0.333,1.0
+GT2 trade drops,EQ-1347183,C + centrality,19,3,3,CHN* MYS VNM IND USA*,1.0,0.333,1.0,0.333,0.333,1.0,0.4,0.667,1.0
+GT2 trade drops,EQ-1347183,random,19,3,3,,0.158,0.053,0.158,0.158,0.158,0.422,0.158,0.263,0.624
