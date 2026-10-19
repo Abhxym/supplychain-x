@@ -45,9 +45,30 @@ def check_neo4j():
     return f"GDS {gds}"
 
 
+def check_hdfs():
+    import requests
+
+    # the namenode's JMX endpoint reports cluster health as JSON
+    url = "http://localhost:9870/jmx?qry=Hadoop:service=NameNode,name=FSNamesystemState"
+    state = requests.get(url, timeout=5).json()["beans"][0]
+    return f"{state['NumLiveDataNodes']} live datanode(s), {state['FilesTotal']} files"
+
+
+def check_spark():
+    import requests
+
+    master = requests.get("http://localhost:8081/json/", timeout=5).json()
+    alive = [w for w in master["workers"] if w["state"] == "ALIVE"]
+    return f"{len(alive)} worker(s), {sum(w['cores'] for w in alive)} cores"
+
+
 if __name__ == "__main__":
     failed = False
-    for name, fn in [("kafka", check_kafka), ("postgres", check_postgres), ("neo4j", check_neo4j)]:
+    checks = [
+        ("kafka", check_kafka), ("postgres", check_postgres), ("neo4j", check_neo4j),
+        ("hdfs", check_hdfs), ("spark", check_spark),
+    ]
+    for name, fn in checks:
         try:
             print(f"[ok]   {name:9} {fn()}")
         except Exception as e:  # noqa: BLE001 - we just want to report whatever broke
