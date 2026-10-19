@@ -2,11 +2,11 @@
 
 Each phase ends with something that runs. Don't start the next one until the current one works.
 
-## Phase 0 – Foundation  ✅ in progress
+## Phase 0 – Foundation  ✅ done
 - [x] Repo layout, README, architecture notes
 - [x] docker-compose: Kafka (KRaft), Kafka UI, Postgres, Neo4j + GDS
 - [x] Postgres schema
-- [ ] Everyone can `docker compose up -d` and pass `scripts/check_services.py`
+- [x] Everyone can `docker compose up -d` and pass `scripts/check_services.py`
 
 **Install:** Docker Desktop, Git, Python 3.11/3.12, Java 17 (needed later for Spark).
 
