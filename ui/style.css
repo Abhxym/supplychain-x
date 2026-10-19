@@ -247,16 +247,18 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 #matrix .cell { cursor: pointer; }
 
 /* unusual trade drops (Isolation Forest, Phase 6) */
-.anoms { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px 22px; }
-.an-row { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px; min-width: 0; }
+.anoms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 4px 28px; }
+.an-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 14px; padding: 9px 10px;
+  margin: 0 -10px; border-radius: 10px; font-size: 13px; min-width: 0; cursor: default; }
+.an-row:hover { background: var(--glass-2); }
 .an-row .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.an-row .who .arrow { color: var(--muted); margin: 0 4px; }
-.an-row .chg { color: var(--red); font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; }
-.an-row .what { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.an-row .val { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.an-row .an-bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
-.an-row .an-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--red)); }
-.an-row.hit .who b { color: var(--orange); font-weight: 500; }
+.an-row .who .arrow { color: var(--muted); margin: 0 6px; font-size: 11px; }
+.an-row .who b { color: var(--orange); font-weight: 500; }
+.an-row .what { grid-column: 1; color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-row .chg { grid-row: 1 / span 2; grid-column: 2; display: flex; align-items: center; gap: 8px;
+  color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; min-width: 96px; justify-content: flex-end; }
+.an-row .an-bar { width: 40px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; flex: none; }
+.an-row .an-bar i { display: block; height: 100%; margin-left: auto; background: var(--red); opacity: .85; }
 .anoms-card .card-h { flex-wrap: wrap; gap: 6px 12px; }
 .anoms-card .card-h > span:first-child, .anoms-card .tool { white-space: nowrap; }
 .an-empty { color: var(--muted); font-size: 12px; padding: 10px 0; }

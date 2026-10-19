@@ -214,6 +214,11 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": 
 // one decimal near 0% and near -100%; every flow listed is still above zero, so never show "-100%"
 const pctChange = c => { const p = Math.max(c * 100, -99.9); return (Math.abs(p) < 10 || Math.abs(p) > 99 ? p.toFixed(1) : Math.round(p)) + "%"; };
 
+// Comtrade's official names are long ("China, Hong Kong SAR"); short ones keep each row on one line
+const SHORT = { RUS: "Russia", HKG: "Hong Kong", ARE: "UAE", KOR: "S. Korea", USA: "USA", GBR: "UK",
+                IRN: "Iran", TUR: "Türkiye", NLD: "Netherlands", SAU: "Saudi Arabia", VNM: "Vietnam" };
+const shortName = (iso, name) => SHORT[iso] || name || iso;
+
 async function drawAnomalies() {
   const r = state.result;
   const only = $("#an-only").getAttribute("aria-pressed") === "true";
@@ -222,7 +227,7 @@ async function drawAnomalies() {
   if (key === state.anomKey) return;              // render() also runs on resize - don't refetch
   state.anomKey = key;
   const qs = only && hit.length ? "&countries=" + hit.join(",") : "";
-  const res = await fetch("/api/anomalies?limit=12" + qs).catch(() => null);
+  const res = await fetch("/api/anomalies?limit=8" + qs).catch(() => null);
   const data = res && res.ok ? await res.json() : null;
   if (key !== state.anomKey) return;              // a newer event was picked meanwhile
   if (!data) {
@@ -235,18 +240,16 @@ async function drawAnomalies() {
     return;
   }
 
-  const inCascade = new Set(r ? [...hit, ...r.affected.map(a => a.iso3)] : []);
-  const names = hit.map(i => state.countries.get(i)?.name || i).join(" + ");
-  $("#an-sub").textContent = only ? `${fmt(data.total)} involve ${names}` : `strangest ${data.items.length} of ${fmt(data.total)} · 2020–2023`;
-  const who = (iso, name) => inCascade.has(iso) ? `<b>${esc(name || iso)}</b>` : esc(name || iso);
+  // every cascade contains all 20 importers, so only the hit country is worth highlighting
+  const isHit = new Set(hit);
+  const names = hit.map(i => shortName(i, state.countries.get(i)?.name)).join(" + ");
+  $("#an-sub").textContent = only ? `${fmt(data.total)} involve ${names}` : `top ${data.items.length} of ${fmt(data.total)}`;
+  const who = (iso, name) => isHit.has(iso) ? `<b>${esc(shortName(iso, name))}</b>` : esc(shortName(iso, name));
   $("#anoms").innerHTML = data.items.length ? data.items.map(a => `
-    <div class="an-row${inCascade.has(a.importer) || inCascade.has(a.supplier) ? " hit" : ""}"
-         title="Isolation Forest score ${a.score.toFixed(3)} - higher is stranger">
+    <div class="an-row" title="${money(a.value_before)} → ${money(a.value_after)} · supplier's share ${a.share_change > 0 ? "+" : ""}${(a.share_change * 100).toFixed(1)} pts · anomaly score ${a.score.toFixed(2)}">
       <span class="who">${who(a.importer, a.importer_name)}<span class="arrow">&larr;</span>${who(a.supplier, a.supplier_name)}</span>
-      <span class="chg">${pctChange(a.change)}</span>
-      <span class="what">${esc(a.product)} · ${a.year} · share ${a.share_change > 0 ? "+" : ""}${(a.share_change * 100).toFixed(1)} pts</span>
-      <span class="val">${money(a.value_before)} &rarr; ${money(a.value_after)}</span>
-      <span class="an-bar"><i style="width:${Math.min(100, -a.change * 100).toFixed(0)}%"></i></span>
+      <span class="chg"><span class="an-bar"><i style="width:${Math.min(100, -a.change * 100).toFixed(0)}%"></i></span>${pctChange(a.change)}</span>
+      <span class="what">${esc(a.product)} · ${a.year}</span>
     </div>`).join("")
     : `<div class="an-empty">No unusual yearly drop involves ${esc(names)}. Annual trade totals average out short
        disruptions - a two-week port closure rarely shows up in a whole year of trade.</div>`;
