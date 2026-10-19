@@ -227,7 +227,7 @@ async function drawAnomalies() {
   if (key === state.anomKey) return;              // render() also runs on resize - don't refetch
   state.anomKey = key;
   const qs = only && hit.length ? "&countries=" + hit.join(",") : "";
-  const res = await fetch("/api/anomalies?limit=8" + qs).catch(() => null);
+  const res = await fetch("/api/anomalies?limit=11" + qs).catch(() => null);
   const data = res && res.ok ? await res.json() : null;
   if (key !== state.anomKey) return;              // a newer event was picked meanwhile
   if (!data) {
