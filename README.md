@@ -64,7 +64,7 @@ python scripts/check_services.py
 |-----------|--------------------------|
 | Kafka UI  | http://localhost:8080    |
 | Neo4j     | http://localhost:7474    |
-| Postgres  | localhost:5432           |
+| Postgres  | localhost:5433           |
 
 ## Project status
 
