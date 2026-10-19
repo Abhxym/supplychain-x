@@ -7,6 +7,8 @@ GET  /api/events          events the engine has scored, highest impact first
 GET  /api/impact/{id}     full cascade for one event
 POST /api/simulate        what-if: pick countries, severity, duration -> cascade
 GET  /api/countries       countries in the graph with centrality and coordinates (for the map)
+GET  /api/alerts          alerts from the streaming job, newest first (?after=<id> for only new ones)
+GET  /api/graph/{iso3}    a country's suppliers and customers in the supply graph
 GET  /api/anomalies       unusual trade drops from Isolation Forest (Phase 6), optionally for some countries
 """
 import json
@@ -124,6 +126,62 @@ def _stats():
 @app.get("/api/stats")
 def stats():
     return _stats()
+
+
+def _parse_alert(message):
+    """The streaming job writes one line: '<title> (<level>) | why: ... | countries: A,B | ... | downstream: ...'."""
+    head, *parts = message.split(" | ")
+    out = {"title": head, "why": None, "countries": [], "downstream": None}
+    for p in parts:
+        k, _, v = p.partition(": ")
+        if k == "why":
+            out["why"] = v
+        elif k == "countries":
+            out["countries"] = [c for c in v.split(",") if c]
+        elif k == "downstream":
+            out["downstream"] = v
+    return out
+
+
+@app.get("/api/alerts")
+def alerts(limit: int = 20, after: int = 0):
+    """Alerts raised by the Spark streaming job (Phase 4), newest first.
+    after=<alert id> returns only newer ones - the dashboard polls with it."""
+    with connect() as db:
+        rows = db.execute("""SELECT a.alert_id, a.event_id, a.severity, a.message, a.status, a.created_at,
+                                    r.event_id IS NOT NULL
+                             FROM alerts a LEFT JOIN impact_runs r ON r.event_id = a.event_id
+                             WHERE a.alert_id > %s ORDER BY a.alert_id DESC LIMIT %s""", (after, limit)).fetchall()
+        total = db.execute("SELECT count(*) FROM alerts").fetchone()[0]
+    items = [{"id": r[0], "event_id": r[1], "severity": r[2], "status": r[4], "created_at": r[5],
+              "scored": r[6], **_parse_alert(r[3])} for r in rows]
+    return {"total": total, "items": items}
+
+
+GRAPH_SIDE = """
+MATCH (c:Country {iso3: $iso3}){arrow}(o:Country)
+WITH o, r ORDER BY r.share DESC
+WITH o, collect(r)[0] AS top, count(r) AS products
+RETURN o.iso3 AS iso3, o.name AS name, top.product AS product, top.share AS share,
+       top.value_usd AS value_usd, products
+ORDER BY share DESC LIMIT $limit
+"""
+
+
+@app.get("/api/graph/{iso3}")
+def graph(iso3: str, limit: int = 8):
+    """One country's neighbourhood in the supply graph: who it buys from (suppliers) and who
+    depends on it (customers), each with the strongest product link between the two."""
+    iso3 = iso3.upper()
+    with _neo4j().session() as s:
+        node = s.run("""MATCH (c:Country {iso3: $iso3})
+                        RETURN c.iso3 AS iso3, c.name AS name, c.betweenness_norm AS centrality,
+                               c.community AS community, c.is_reporter AS is_reporter""", iso3=iso3).single()
+        if not node:
+            raise HTTPException(404, "no country " + iso3 + " in the graph")
+        suppliers = s.run(GRAPH_SIDE.replace("{arrow}", "<-[r:SUPPLIES]-"), iso3=iso3, limit=limit).data()
+        customers = s.run(GRAPH_SIDE.replace("{arrow}", "-[r:SUPPLIES]->"), iso3=iso3, limit=limit).data()
+    return {"country": dict(node), "suppliers": suppliers, "customers": customers}
 
 
 @app.get("/api/anomalies")
