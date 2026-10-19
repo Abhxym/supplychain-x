@@ -87,3 +87,9 @@ variants (severity only / + exposure / + centrality) against historical cases.
 - **Bottom:** industry x country dot matrix of the cascade, and events by alert level.
 - **Top bar:** event picker (556 scored events, searchable) and the what-if simulator (countries, severity,
   duration, decay, minimum link share).
+- **Every number is explainable:** click any dot in the industry matrix for the full breakdown (why that
+  country/industry is exposed, the five factors and the formula with the actual numbers), switch on
+  **Values** to print every score, or open **All values** for the complete table of the cascade.
+- **Made for first-time viewers:** a welcome card on the first visit, a 10-step guided tour that spotlights
+  each panel (restart it with the ? button), an i button with a plain-language explanation on every panel,
+  and a map legend.
