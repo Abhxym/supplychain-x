@@ -14,8 +14,8 @@ Each phase ends with something that runs. Don't start the next one until the cur
 - [x] Countries + HS commodity reference tables
 - [x] UN Comtrade downloader → `data/bronze/trade/` (20 countries, 12 HS chapters, 2019-23, ~330k rows)
 - [ ] Open-Meteo historical weather for port/country coordinates → `data/bronze/weather/`
-- [ ] GDACS disaster events → `data/bronze/events/`
-- [ ] World Port Index → `data/bronze/ports/`
+- [x] GDACS disaster events → `data/bronze/events/gdacs/` (2019-23, ~49k unique events, 361 orange/red)
+- [x] World Port Index → `data/bronze/ports/` (3,807 ports)
 
 Rule: bronze is never edited by hand. Every file comes from a script, so the whole lake can be rebuilt.
 
