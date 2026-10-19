@@ -34,7 +34,7 @@ More detail in [docs/architecture.md](docs/architecture.md).
 |----------------|---------------------------------------|
 | Storage        | Hadoop HDFS (2 DataNodes) + Parquet, bronze/silver/gold |
 | Batch          | Apache Spark cluster (PySpark, Spark SQL), 1 master + 2 workers |
-| Baseline       | Hadoop MapReduce (one job, to compare against Spark) |
+| Baseline       | Hadoop MapReduce on YARN, mapper/reducer in C++ (one job, to compare against Spark) |
 | Streaming      | Apache Kafka + Spark Structured Streaming |
 | Graph          | Neo4j + Graph Data Science            |
 | Relational     | PostgreSQL                            |
@@ -81,6 +81,13 @@ python scripts/spark_run.py gold
 
 # switch off a DataNode and prove nothing is lost (~3 min)
 python scripts/hdfs_failover_demo.py
+
+# phase 3: optimisation experiments, then MapReduce (C++ on YARN) vs Spark
+python scripts/spark_run.py bench_prepare
+python scripts/bench.py
+docker compose --profile mapreduce up -d
+python scripts/build_mapreduce.py
+python scripts/bench_mapreduce.py
 ```
 
 | Service          | URL                      |
@@ -88,6 +95,7 @@ python scripts/hdfs_failover_demo.py
 | HDFS NameNode    | http://localhost:9870    |
 | Spark master     | http://localhost:8081    |
 | Spark job (live) | http://localhost:4040    |
+| YARN (phase 3)   | http://localhost:8088    |
 | Kafka UI         | http://localhost:8080    |
 | Neo4j            | http://localhost:7474    |
 | Postgres         | localhost:5433           |

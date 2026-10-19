@@ -57,8 +57,9 @@ so our few-MB files visibly split; at real scale tiny blocks would overload the 
 The NameNode only keeps the map of which block is where. If one DataNode dies, every block still has a
 live copy, so nothing is lost and jobs keep running. On a single laptop this gives no speed-up (both
 DataNodes share one disk); the point is the storage model, which is the same one a real cluster uses.
-We use HDFS but not the rest of Hadoop: YARN is replaced by Spark's own standalone scheduler, and
-MapReduce is only used once, as a baseline to compare Spark against (phase 3).
+Spark runs on its own standalone scheduler rather than YARN. YARN and MapReduce are only started for
+one phase 3 experiment (`docker compose --profile mapreduce up -d`): the same job written as a C++
+Hadoop Streaming job and in Spark, timed against each other ([experiments.md](experiments.md)).
 
 **Spark.** All the heavy transformations (joining millions of trade rows with events, computing shares and
 windows) are written once in PySpark and run in parallel across partitions. The same DataFrame API is

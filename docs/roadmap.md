@@ -47,17 +47,17 @@ Data issues found, to fix in silver:
 
 Flow: ingestion scripts → local landing zone (`data/bronze`) → HDFS `/lake/bronze` → Spark → `/lake/silver` → `/lake/gold`
 
-## Phase 3 – Optimization experiments
-Measure, on our own data, baseline vs:
-- partitioning + partition pruning
-- broadcast join (small country/port lookups)
-- caching reused DataFrames
-- 1 / 4 / 8 / 16 shuffle partitions
-- 1 worker vs 2 workers
-- **Hadoop MapReduce vs Spark**: the same aggregation (trade value per country per commodity)
-  written once as a MapReduce job (Hadoop Streaming, Python) and once in Spark, timed on the same data
-
-Record real timings in `docs/experiments.md`. Never invent numbers.
+## Phase 3 – Optimization experiments  ✅ done
+Measured on a x10 copy of the real trade data (3.3M rows), median of 3 runs after a warm-up.
+Full write-up: [experiments.md](experiments.md), raw numbers: `results/benchmarks.csv`.
+- [x] E0 Parquet vs CSV: 2.9x faster
+- [x] E1 shuffle partitions 1 -> 8: 2.0x faster, no gain beyond 8
+- [x] E2 broadcast join: 1.7x faster than sort-merge
+- [x] E3 partition pruning: 1.3x (Parquet min/max stats already skip most data)
+- [x] E4 caching: 1.9x once filled, but slower if filled for only 3 quick queries
+- [x] E5 1 vs 2 workers: 1.06x - fixed costs dominate at this size
+- [x] E6 **Hadoop MapReduce vs Spark**: same job, same output, same hardware budget - Spark 2.0x faster
+      (MapReduce side written in C++ with Hadoop Streaming, run on YARN)
 
 ## Phase 4 – Streaming
 - Topics: `supplychain.events`, `supplychain.weather`, `supplychain.alerts`
