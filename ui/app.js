@@ -294,6 +294,66 @@ function openAlert(id) {
   else if (a.countries.length) { state.sim = a.countries.slice(); renderChips(); runSim(); }
 }
 
+// ================================================================ country supply network (Phase 7)
+// Click a country on the map: who it buys from (left, arrows in) and who depends on it (right, arrows out),
+// from Neo4j. Line width = the share of the importer's imports of the strongest product between the two.
+const SHORT_PRODUCT = { "Electronics and electrical equipment": "Electronics", "Optical and medical instruments": "Instruments" };
+const shortProduct = p => SHORT_PRODUCT[p] || p;
+
+async function openGraph(iso3) {
+  const res = await fetch("/api/graph/" + iso3).catch(() => null);
+  if (!res || !res.ok) return;
+  const g = await res.json();
+  const c = g.country;
+  $("#gr-title").textContent = `${c.name} (${c.iso3})`;
+  $("#gr-help").innerHTML = `Left: who ${esc(c.name)} buys from. Right: who depends on ${esc(c.name)}. ` +
+    `Each line shows the strongest product link and its share of the importer's imports (2023). ` +
+    `<b>Click a country</b> to move to its network.`;
+
+  const hitSet = new Set(state.result ? state.result.sources.map(s => s.iso3) : []);
+  const scoreOf = new Map(state.result ? state.result.affected.map(a => [a.iso3, a.score]) : []);
+  const dot = iso => hitSet.has(iso) ? C.red : scoreOf.has(iso) ? heat(scoreOf.get(iso)) : C.muted;
+  const n = Math.max(g.suppliers.length, g.customers.length, 1);
+  $("#graph-modal").hidden = false;             // open first, so the svg has a width to measure
+  const Wd = Math.max(480, Math.min(760, $("#gr-svg").clientWidth || 760)), Hd = 70 + n * 46, cx = Wd / 2, cy = 36 + n * 23;
+  const gap = Wd < 600 ? 150 : 200;              // node columns sit closer together on a narrow screen
+  const ys = list => list.map((_, i) => 58 + i * 46 + (n - list.length) * 23);
+  const svg = d3.select("#gr-svg").attr("viewBox", `0 0 ${Wd} ${Hd}`).attr("role", "img")
+    .attr("aria-label", `Supply network of ${c.name}`);
+  svg.selectAll("*").remove();
+  svg.append("defs").append("marker").attr("id", "gr-arrow").attr("viewBox", "0 0 10 10").attr("refX", 9).attr("refY", 5)
+    .attr("markerUnits", "userSpaceOnUse").attr("markerWidth", 8).attr("markerHeight", 8).attr("orient", "auto")
+    .append("path").attr("d", "M0,0L10,5L0,10z").attr("fill", "var(--line-2)");
+  svg.append("text").attr("class", "side").attr("x", 8).attr("y", 24).text("Buys from");
+  svg.append("text").attr("class", "side").attr("x", Wd - 8).attr("y", 24).attr("text-anchor", "end").text("Supplies");
+
+  const side = (list, left) => {
+    const nx = left ? gap : Wd - gap, y = ys(list);
+    list.forEach((p, i) => {
+      const x1 = left ? nx + 8 : cx + 34, x2 = left ? cx - 34 : nx - 8;
+      const y1 = left ? y[i] : cy, y2 = left ? cy : y[i];
+      svg.append("path").attr("class", "link").attr("stroke-width", 1 + p.share * 12).attr("marker-end", "url(#gr-arrow)")
+        .attr("d", `M${x1},${y1}C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`)
+        .append("title").text(`${left ? p.name + " → " + c.name : c.name + " → " + p.name}: ${pct(p.share)} of ${left ? c.name : p.name}'s ${p.product.toLowerCase()} imports (${money(p.value_usd)}), ${p.products} products in all`);
+      const node = svg.append("g").attr("class", "node").attr("transform", `translate(${nx},${y[i]})`)
+        .on("click", () => openGraph(p.iso3));
+      node.append("circle").attr("r", 6).attr("fill", dot(p.iso3));
+      const tx = left ? -14 : 14, anchor = left ? "end" : "start";
+      node.append("text").attr("class", "nm").attr("x", tx).attr("y", -2).attr("text-anchor", anchor).text(shortName(p.iso3, p.name));
+      node.append("text").attr("class", "pr").attr("x", tx).attr("y", 13).attr("text-anchor", anchor)
+        .text(`${shortProduct(p.product)} · ${pct(p.share)}`);
+    });
+    if (!list.length) svg.append("text").attr("class", "pr").attr("x", nx).attr("y", cy).attr("text-anchor", "middle")
+      .text(left ? "no imports seen (not one of our 20 reporters)" : "no links >= 1% into our 20 reporters");
+  };
+  side(g.suppliers, true);
+  side(g.customers, false);
+  svg.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 30).attr("fill", "var(--glass-2)")
+    .attr("stroke", dot(c.iso3) === C.muted ? "var(--teal)" : dot(c.iso3)).attr("stroke-width", 2);
+  svg.append("text").attr("class", "nm").attr("x", cx).attr("y", cy + 5).attr("text-anchor", "middle")
+    .style("font-weight", 600).text(c.iso3);
+}
+
 function curve([x1, y1], [x2, y2]) {
   const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
   return `M${x1},${y1} Q${(x1 + x2) / 2 - dy * 0.2},${(y1 + y2) / 2 + dx * 0.2 - d * 0.1} ${x2},${y2}`;
@@ -611,6 +671,7 @@ function hover(e) {
   else if (a) html += `<div class="row">impact <b style="color:${heat(a.score)}">${a.score.toFixed(2)}</b> · ${a.hop} hop${a.hop > 1 ? "s" : ""}</div>` +
     a.chains.slice(0, 3).map(ch => `<div class="row">${ch.path.join(" → ")} · ${ch.product} ${pct(ch.dependency)}</div>`).join("");
   else html += `<div class="row">not in this cascade</div>`;
+  if (c) html += `<div class="row">click for its supply network</div>`;
   tip.innerHTML = html;
   tip.hidden = false;
   tip.style.left = Math.min(mx + 14, W - tip.offsetWidth - 8) + "px";
@@ -739,6 +800,12 @@ function bindUI() {
     overlay.selectAll(".marks").attr("opacity", state.showMarkers ? 1 : 0);
   });
   $("#map").addEventListener("mousemove", hover);
+  $("#map").addEventListener("click", e => {
+    if (e.target.closest(".stack, .toolbar, .map-title, .legend")) return;
+    const box = $("#map").getBoundingClientRect();
+    const iso3 = state.dotIndex.get(Math.round((e.clientX - box.left) / state.step) + "," + Math.round((e.clientY - box.top) / state.step));
+    if (iso3 && state.countries.has(iso3)) { $("#tip").hidden = true; openGraph(iso3); }
+  });
   $("#map").addEventListener("mouseleave", () => { $("#tip").hidden = true; });
 }
 

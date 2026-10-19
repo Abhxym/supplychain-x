@@ -262,6 +262,15 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 .an-row .an-bar i { display: block; height: 100%; margin-left: auto; background: var(--red); opacity: .85; }
 .anoms-card .card-h { flex-wrap: wrap; gap: 6px 12px; }
 .anoms-card .card-h > span:first-child, .anoms-card .tool { white-space: nowrap; }
+/* country supply network (Phase 7) */
+.gr-svg { width: 100%; height: auto; display: block; margin-top: 6px; }
+.gr-svg .link { fill: none; stroke: var(--line-2); stroke-linecap: round; }
+.gr-svg .node { cursor: pointer; }
+.gr-svg .node:hover .nm { fill: var(--teal); }
+.gr-svg .nm { fill: var(--text); font-size: 13px; }
+.gr-svg .pr { fill: var(--muted); font-size: 11px; }
+.gr-svg .side { fill: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+
 /* live alerts from the streaming job (Phase 7) */
 .live-card .card-h > span:first-child { display: flex; align-items: center; gap: 8px; }
 .live-list { display: flex; flex-direction: column; }
