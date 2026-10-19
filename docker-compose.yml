@@ -64,7 +64,52 @@ services:
     volumes:
       - neo4j-data:/data
 
+  # ---------- Hadoop HDFS: the data lake storage ----------
+  # NameNode keeps the "index" (which file is made of which blocks, and where they are).
+  # DataNodes store the actual blocks. With replication=2 each block lives on both.
+  namenode:
+    image: apache/hadoop:3.4.1
+    container_name: scx-namenode
+    hostname: namenode
+    user: root
+    command: ["hdfs", "namenode"]
+    ports:
+      - "9870:9870"   # HDFS web UI
+    env_file: hadoop.env
+    environment:
+      # formats a fresh filesystem the first time (when this folder doesn't exist yet)
+      ENSURE_NAMENODE_DIR: /tmp/hadoop-root/dfs/name
+    volumes:
+      - hdfs-name:/tmp/hadoop-root
+      # local bronze files, so we can copy them into HDFS from inside the cluster
+      - ./data:/landing:ro
+
+  datanode1:
+    image: apache/hadoop:3.4.1
+    container_name: scx-datanode1
+    hostname: datanode1
+    user: root
+    command: ["hdfs", "datanode"]
+    env_file: hadoop.env
+    depends_on: [namenode]
+    volumes:
+      - hdfs-data1:/tmp/hadoop-root
+
+  datanode2:
+    image: apache/hadoop:3.4.1
+    container_name: scx-datanode2
+    hostname: datanode2
+    user: root
+    command: ["hdfs", "datanode"]
+    env_file: hadoop.env
+    depends_on: [namenode]
+    volumes:
+      - hdfs-data2:/tmp/hadoop-root
+
 volumes:
   kafka-data:
   pg-data:
   neo4j-data:
+  hdfs-name:
+  hdfs-data1:
+  hdfs-data2:
