@@ -1,0 +1,68 @@
+== baseline (always low)
+              precision    recall  f1-score   support
+
+         low      0.994     1.000     0.997     14020
+      medium      0.000     0.000     0.000        57
+        high      0.000     0.000     0.000        29
+
+    accuracy                          0.994     14106
+   macro avg      0.331     0.333     0.332     14106
+weighted avg      0.988     0.994     0.991     14106
+
+confusion matrix (rows = truth, cols = predicted; low, medium, high)
+          low  medium  high
+low     14020       0     0
+medium     57       0     0
+high       29       0     0
+
+== logistic regression
+              precision    recall  f1-score   support
+
+         low      0.997     0.901     0.947     14020
+      medium      0.017     0.404     0.033        57
+        high      0.147     0.483     0.226        29
+
+    accuracy                          0.898     14106
+   macro avg      0.387     0.596     0.402     14106
+weighted avg      0.991     0.898     0.941     14106
+
+confusion matrix (rows = truth, cols = predicted; low, medium, high)
+          low  medium  high
+low     12632    1316    72
+medium     25      23     9
+high       12       3    14
+
+== random forest
+              precision    recall  f1-score   support
+
+         low      0.996     0.993     0.994     14020
+      medium      0.110     0.211     0.145        57
+        high      0.263     0.172     0.208        29
+
+    accuracy                          0.988     14106
+   macro avg      0.456     0.459     0.449     14106
+weighted avg      0.991     0.988     0.989     14106
+
+confusion matrix (rows = truth, cols = predicted; low, medium, high)
+          low  medium  high
+low     13920      89    11
+medium     42      12     3
+high       16       8     5
+
+== random forest permutation importance (drop in macro F1 on 2023 when a feature is shuffled)
+type_TC            +0.0720
+type_WF            +0.0461
+duration           +0.0439
+type_EQ            +0.0315
+past_serious       +0.0277
+port_rain          +0.0052
+n_countries        +0.0051
+past_events        +0.0030
+type_FL            +0.0003
+type_VO            -0.0001
+type_DR            -0.0018
+ports              -0.0040
+port_severe_days   -0.0054
+exports_log        -0.0076
+top_share          -0.0083
+port_gust          -0.0094
