@@ -254,9 +254,11 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 .an-row .chg { color: var(--red); font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; }
 .an-row .what { color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .an-row .val { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.an-row .bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
-.an-row .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--red)); }
+.an-row .an-bar { grid-column: 1 / -1; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.an-row .an-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--orange), var(--red)); }
 .an-row.hit .who b { color: var(--orange); font-weight: 500; }
+.anoms-card .card-h { flex-wrap: wrap; gap: 6px 12px; }
+.anoms-card .card-h > span:first-child, .anoms-card .tool { white-space: nowrap; }
 .an-empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
 #matrix .cell:hover, #matrix .cell.sel { stroke: var(--text); stroke-width: 1.5; }
 .cell-pop { width: 340px; }

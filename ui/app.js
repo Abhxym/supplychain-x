@@ -246,7 +246,7 @@ async function drawAnomalies() {
       <span class="chg">${pctChange(a.change)}</span>
       <span class="what">${esc(a.product)} · ${a.year} · share ${a.share_change > 0 ? "+" : ""}${(a.share_change * 100).toFixed(1)} pts</span>
       <span class="val">${money(a.value_before)} &rarr; ${money(a.value_after)}</span>
-      <span class="bar"><i style="width:${Math.min(100, -a.change * 100).toFixed(0)}%"></i></span>
+      <span class="an-bar"><i style="width:${Math.min(100, -a.change * 100).toFixed(0)}%"></i></span>
     </div>`).join("")
     : `<div class="an-empty">No unusual yearly drop involves ${esc(names)}. Annual trade totals average out short
        disruptions - a two-week port closure rarely shows up in a whole year of trade.</div>`;
