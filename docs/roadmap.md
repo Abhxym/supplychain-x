@@ -10,14 +10,23 @@ Each phase ends with something that runs. Don't start the next one until the cur
 
 **Install:** Docker Desktop, Git, Python 3.11/3.12, Java 17 (needed later for Spark).
 
-## Phase 1 – Ingestion (bronze layer)  🔄 in progress
+## Phase 1 – Ingestion (bronze layer)  ✅ done
 - [x] Countries + HS commodity reference tables
 - [x] UN Comtrade downloader → `data/bronze/trade/` (20 countries, 12 HS chapters, 2019-23, ~330k rows)
-- [ ] Open-Meteo historical weather for port/country coordinates → `data/bronze/weather/`
+- [x] Open-Meteo daily weather for 45 major ports → `data/bronze/weather/` (2019-23, 82k rows)
 - [x] GDACS disaster events → `data/bronze/events/gdacs/` (2019-23, ~49k unique events, 361 orange/red)
 - [x] World Port Index → `data/bronze/ports/` (3,807 ports)
 
 Rule: bronze is never edited by hand. Every file comes from a script, so the whole lake can be rebuilt.
+
+Rebuild everything: `ingestion.reference` → `ingestion.comtrade` → `ingestion.ports` → `ingestion.gdacs` → `ingestion.weather`
+
+Data issues found, to fix in silver:
+- GDACS: long events repeat in every month they span; alert level written as both `Green` and `GREEN`;
+  one event can list several countries (`affectedcountries`)
+- WPI: `country_code` holds country names, not codes; index numbers 400 and 46135 are used twice;
+  coordinates are strings
+- Comtrade: partner `W00` / code 0 is the World total row, not a country - exclude it when computing shares
 
 ## Phase 2 – Spark ETL (silver + gold)
 - Spark dev container (avoids the winutils/Hadoop pain of running Spark natively on Windows)
