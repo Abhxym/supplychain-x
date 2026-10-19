@@ -33,3 +33,54 @@ COMMODITIES = {
 YEARS = [2019, 2020, 2021, 2022, 2023]
 
 FLOWS = ["M", "X"]  # imports, exports
+
+# Busiest container ports + chokepoint hubs, by World Port Index number.
+# Picked by hand: WPI's "harbor_size" is physical size, not traffic (it calls Ningbo "Small"),
+# and several big Chinese ports + Singapore have no UN/LOCODE in WPI, so the index number is the safe key.
+MAJOR_PORTS = [
+    59970,  # Shanghai, China
+    59940,  # Ningbo, China
+    57857,  # Yantian (Shenzhen), China
+    57777,  # Shekou (Shenzhen), China
+    60140,  # Qingdao, China
+    57830,  # Guangzhou, China
+    60190,  # Tianjin Xin Gang, China
+    57870,  # Xiamen, China
+    50000,  # Singapore (Keppel)
+    60390,  # Busan, South Korea
+    57840,  # Hong Kong
+    48276,  # Jebel Ali, UAE
+    31140,  # Rotterdam, Netherlands
+    31250,  # Antwerp, Belgium
+    49930,  # Port Klang, Malaysia
+    51587,  # Tanjung Pelepas, Malaysia
+    57920,  # Kaohsiung, Taiwan
+    16080,  # Los Angeles, USA
+    16070,  # Long Beach, USA
+    7640,   # New York, USA
+    8530,   # Savannah, USA
+    9240,   # Houston, USA
+    30780,  # Hamburg, Germany
+    30810,  # Bremerhaven, Germany
+    61380,  # Tokyo, Japan
+    61390,  # Yokohama, Japan
+    61560,  # Kobe, Japan
+    48845,  # Nhava Sheva (JNPT, Mumbai), India
+    48617,  # Mundra, India
+    49450,  # Chennai, India
+    57580,  # Ho Chi Minh City, Vietnam
+    57680,  # Hai Phong, Vietnam
+    57462,  # Laem Chabang, Thailand
+    50970,  # Jakarta (Tanjung Priok), Indonesia
+    49240,  # Colombo, Sri Lanka
+    31560,  # Felixstowe, UK
+    35840,  # Le Havre, France
+    39470,  # Genoa, Italy
+    38480,  # Valencia, Spain
+    38310,  # Algeciras, Spain
+    45140,  # Port Said, Egypt (Suez canal)
+    12970,  # Santos, Brazil
+    15770,  # Manzanillo, Mexico
+    18150,  # Vancouver, Canada
+    48140,  # Jeddah, Saudi Arabia
+]
