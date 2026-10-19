@@ -59,11 +59,15 @@ Full write-up: [experiments.md](experiments.md), raw numbers: `results/benchmark
 - [x] E6 **Hadoop MapReduce vs Spark**: same job, same output, same hardware budget - Spark 2.0x faster
       (MapReduce side written in C++ with Hadoop Streaming, run on YARN)
 
-## Phase 4 – Streaming
-- Topics: `supplychain.events`, `supplychain.weather`, `supplychain.alerts`
-- Replay producer: pushes historical events in timestamp order (with a speed-up factor)
-- Spark Structured Streaming consumer: validate schema → enrich with gold tables → write alerts
-- Checkpointing + watermarks
+## Phase 4 – Streaming  ✅ done
+Details and results: [streaming.md](streaming.md)
+- [x] Topics `supplychain.events`, `supplychain.alerts`, `supplychain.events.dlq` (retention capped)
+- [x] Replay producer: real GDACS events in time order, sped up, idempotent, can inject broken messages
+- [x] Spark Structured Streaming: validate -> DLQ, enrich with gold (ports, nearest port, downstream
+      dependents), alert rule, alerts to Kafka + events/alerts to Postgres (idempotent)
+- [x] Checkpointing on HDFS: driver killed mid-stream, restart caught up to exactly 1,297 events, none twice
+- [x] Watermark: daily event counts in event time, 2 days allowed lateness
+- [x] Found: GDACS rated Typhoon Hagibis Green - our port rule still raised it
 
 ## Phase 5 – Graph + impact engine
 - Load gold tables into Neo4j

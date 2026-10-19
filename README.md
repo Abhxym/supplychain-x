@@ -88,6 +88,12 @@ python scripts/bench.py
 docker compose --profile mapreduce up -d
 python scripts/build_mapreduce.py
 python scripts/bench_mapreduce.py
+
+# phase 4: live stream (two terminals) - see docs/streaming.md
+python scripts/spark_run.py export_replay
+python scripts/kafka_topics.py --reset
+python scripts/spark_run.py stream_events
+python -m ingestion.replay_producer --from 2019-09-01 --to 2019-10-31 --speed 86400 --bad 3
 ```
 
 | Service          | URL                      |
