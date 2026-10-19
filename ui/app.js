@@ -222,9 +222,18 @@ async function drawAnomalies() {
   if (key === state.anomKey) return;              // render() also runs on resize - don't refetch
   state.anomKey = key;
   const qs = only && hit.length ? "&countries=" + hit.join(",") : "";
-  const data = await fetch("/api/anomalies?limit=12" + qs).then(x => x.json()).catch(() => null);
+  const res = await fetch("/api/anomalies?limit=12" + qs).catch(() => null);
+  const data = res && res.ok ? await res.json() : null;
   if (key !== state.anomKey) return;              // a newer event was picked meanwhile
-  if (!data) { $("#anoms").innerHTML = `<div class="an-empty">Run <code>python -m ml.anomalies</code> to fill this list.</div>`; return; }
+  if (!data) {
+    // 404: the API process is older than this page; 500: the table is missing
+    $("#an-sub").textContent = "";
+    $("#anoms").innerHTML = `<div class="an-empty">${res && res.status === 404
+      ? "This API server is older than the page - restart <code>uvicorn api.main:app</code> to load <code>/api/anomalies</code>."
+      : "No anomaly data - run <code>python -m ml.anomalies</code>, then reload."}</div>`;
+    state.anomKey = null;                         // try again on the next event
+    return;
+  }
 
   const inCascade = new Set(r ? [...hit, ...r.affected.map(a => a.iso3)] : []);
   const names = hit.map(i => state.countries.get(i)?.name || i).join(" + ");
