@@ -95,6 +95,7 @@ python scripts/spark_run.py export_replay
 python scripts/kafka_topics.py --reset
 python scripts/spark_run.py stream_events
 python -m ingestion.replay_producer --from 2019-09-01 --to 2019-10-31 --speed 86400 --bad 3
+python -m ingestion.live_gdacs                   # or: today's real disasters, polled every 10 min
 
 # phase 5: graph, impact engine, dashboard - see docs/graph-and-impact.md
 python scripts/spark_run.py export_graph

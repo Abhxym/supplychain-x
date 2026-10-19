@@ -24,6 +24,31 @@ python -m ingestion.replay_producer --from 2019-09-01 --to 2019-10-31 --speed 86
 
 Watch: Kafka UI http://localhost:8080 (topics, messages), Spark job UI http://localhost:4040 (Structured Streaming tab).
 
+## Live mode: today's disasters
+
+The replay is for repeatable tests. For real live data, a second producer polls the GDACS API every
+10 minutes and sends **current** events into the same topic, in the same message format (plus
+`"feed": "gdacs-live"`), so the streaming job, the alerts table and the dashboard need no changes.
+
+```bash
+python scripts/spark_run.py stream_events      # terminal 1
+python -m ingestion.live_gdacs                 # terminal 2: every 10 min until Ctrl-C (--once = one poll)
+```
+
+- **Only what changed is sent.** `data/live/sent.json` remembers each event's alert level and episode; an event is
+  sent again only when GDACS updates it (a cyclone upgraded Green -> Orange -> Red). A restart resends nothing.
+- **Upgrades raise a new alert.** The stream used to write one alert per event; now it writes one per event *and
+  severity*, so an upgrade to HIGH shows up, while a resent message with nothing new still adds nothing.
+- **Serious live events are scored** by the impact engine (Orange/Red with a country, every cyclone) and stored like
+  the historical ones, so they appear in the dashboard's event picker. `--no-score` skips that.
+- GDACS down or no internet: the poll prints a warning and tries again next round.
+
+First run (2026-10-19): 392 events from the last 7 days -> 2 micro-batches, 0 rejected -> 10 alerts, among them
+**HIGH: Tropical Cyclone CHAMPI-26 (Red) over Japan, major ports Kobe, Tokyo, Yokohama**; 8 events scored.
+
+Limit: the impact engine still uses 2023 trade links and our weather data ends in 2023, so live events get no
+weather check (the severity stays GDACS's).
+
 ## Why not random data
 
 The producer sends real GDACS events from 2019-2023, oldest first, keeping the real gaps between them

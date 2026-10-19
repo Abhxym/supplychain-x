@@ -85,9 +85,11 @@ variants (severity only / + exposure / + centrality) against historical cases.
   and monthly severe port-weather days as spikes; an insight card explaining the result in one sentence.
 - **Right:** gauge rings - countries in the cascade, peak impact, severity (cyan when our weather data raised it).
 - **Bottom:** industry x country dot matrix of the cascade, and events by alert level.
-- **Unusual trade drops** (Phase 6, `GET /api/anomalies`): the 12 strangest import drops Isolation Forest found
-  (`python -m ml.anomalies`), with value before -> after and the change in the supplier's share. **Only hit
-  country** keeps the drops where the event's country is supplier or importer; the hit country is orange.
+- **Unusual trade drops** (Phase 6, `GET /api/anomalies?countries=&years=`): import drops Isolation Forest found
+  (`python -m ml.anomalies`). It **follows the selected event**: the hit country's drops (as supplier or importer,
+  shown orange) in the event's year and the next. If there are none it widens to all years; for events after 2023
+  (live ones) it says trade data ends in 2023. Switch off **This event** for the strangest drops overall. Hover a
+  row for value before -> after and the change in the supplier's share.
 - **Live alerts** (Phase 7, `GET /api/alerts`): the Spark streaming job's alerts, newest first. The page asks for
   alerts newer than the last one it has (`?after=<id>`) every 5 s, so a Kafka replay shows up as it runs; new ones
   flash red. Click one to open its cascade (or simulate it if the engine hasn't scored that event).

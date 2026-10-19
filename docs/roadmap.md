@@ -95,7 +95,11 @@ Details: [graph-and-impact.md](graph-and-impact.md)
 - [x] Dashboard: risk map, **live alerts** (polls the streaming job's alerts every 5 s), **graph view**
       (click a country: its suppliers and dependents), analytics, what-if simulator, unusual trade drops
 - [x] D3 + plain JavaScript instead of React - same features, no build step (reason in architecture.md)
-- [x] API tests: `python -m pytest -q` - 14 tests over every endpoint, skipped when the databases are down
+- [x] API tests: `python -m pytest -q` - 16 tests over every endpoint, skipped when the databases are down
+- [x] Live data: `python -m ingestion.live_gdacs` polls GDACS every 10 min into Kafka (see streaming.md);
+      the trade-drops card follows the selected event
+
+**Feature freeze from here.** Only fixes from now on.
 
 ## Phase 8 – Freeze + write-up
 Experiments, report, paper, demo script, viva prep. No new features.
