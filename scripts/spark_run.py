@@ -25,8 +25,8 @@ PG_DRIVER = "org.postgresql:postgresql:42.7.4"
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
-def submit(job):
-    print("=== " + job)
+def submit(job, args=()):
+    print("=== " + " ".join((job,) + tuple(args)))
     start = time.time()
     cmd = ["docker", "exec"]
     extra = []
@@ -39,18 +39,20 @@ def submit(job):
             "--conf", "spark.ui.showConsoleProgress=false",
             "--conf", "spark.log.level=ERROR",  # spark 3.5+: only real errors, no plan dumps
             *extra,
-            "/opt/scx/spark_jobs/{}.py".format(job)]
+            "/opt/scx/spark_jobs/{}.py".format(job), *args]
     r = subprocess.run(cmd, capture_output=True, text=True)
     noise = (" INFO ", " WARN ", "WARNING: ", ":: ", "found org.", "downloading ", "[SUCCESSFUL ]",
              "confs: [default]", "Ivy Default Cache", "The jars for the packages", "artifacts copied",
              "retrieving ::", "loading settings", "resolving dependencies", "---------", "|  ", "module:",
              "added as a dependency", "from central in")
-    for line in r.stdout.splitlines() + r.stderr.splitlines():
-        if line.strip() and not any(n in line for n in noise):
-            print("  " + line)
+    kept = [l for l in r.stdout.splitlines() + r.stderr.splitlines()
+            if l.strip() and not any(n in l for n in noise)]
+    for line in kept:
+        print("  " + line)
     print("  ({:.0f}s)".format(time.time() - start))
     if r.returncode != 0:
         raise SystemExit(job + " failed")
+    return kept
 
 
 if __name__ == "__main__":
