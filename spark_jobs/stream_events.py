@@ -31,7 +31,7 @@ PG = {"user": os.environ["POSTGRES_USER"], "password": os.environ["POSTGRES_PASS
 
 SCHEMA = ("event_key STRING, event_type STRING, alert_level STRING, alert_score DOUBLE, "
           "severity_value DOUBLE, severity_unit STRING, title STRING, start_ts STRING, end_ts STRING, "
-          "latitude DOUBLE, longitude DOUBLE, countries ARRAY<STRING>, replayed_at STRING")
+          "latitude DOUBLE, longitude DOUBLE, countries ARRAY<STRING>, replayed_at STRING, feed STRING")
 TYPES = ["EQ", "TC", "FL", "VO", "DR", "WF"]
 
 # ---------- static lookups, loaded once (stream-static joins) ----------
@@ -165,7 +165,7 @@ def process_batch(batch, batch_id):
               F.element_at("countries", 1).alias("iso3"), "latitude", "longitude",
               F.when(F.col("alert_level") == "Red", 1.0).when(F.col("alert_level") == "Orange", 0.6)
                .otherwise(0.2).cast("float").alias("severity"),
-              F.lit("gdacs-replay").alias("source"))
+              F.coalesce("feed", F.lit("gdacs-replay")).alias("source"))  # live messages say gdacs-live
         .write.jdbc(PG_URL, "events_stage", mode="overwrite", properties=dict(PG, truncate="true")))
     (alerts.select(F.col("event_key").alias("event_id"), "severity", "message")
         .write.jdbc(PG_URL, "alerts_stage", mode="overwrite", properties=dict(PG, truncate="true")))
@@ -173,9 +173,11 @@ def process_batch(batch, batch_id):
               SELECT s.event_id, s.ts, s.event_type, c.country_id, s.latitude, s.longitude, s.severity, s.source
               FROM events_stage s LEFT JOIN countries c ON c.iso3 = s.iso3
               ON CONFLICT (event_id) DO NOTHING""")
+    # one alert per event and severity: a live cyclone upgraded from MEDIUM to HIGH raises a new alert,
+    # but a re-run batch or a resent message with nothing new adds nothing
     pg_sql("""INSERT INTO alerts (event_id, severity, message)
               SELECT s.event_id, s.severity, s.message FROM alerts_stage s
-              WHERE NOT EXISTS (SELECT 1 FROM alerts a WHERE a.event_id = s.event_id)""")
+              WHERE NOT EXISTS (SELECT 1 FROM alerts a WHERE a.event_id = s.event_id AND a.severity = s.severity)""")
 
     by_level = {r["severity"]: r["count"] for r in alerts.groupBy("severity").count().collect()}
     print("batch {}: {} events, {} rejected -> DLQ, {} alerts {}".format(

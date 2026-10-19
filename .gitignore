@@ -35,3 +35,4 @@ mapreduce/bin/
 data/replay/
 data/graph/
 .claude/
+data/live/

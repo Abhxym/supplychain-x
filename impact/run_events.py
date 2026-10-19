@@ -30,10 +30,38 @@ def connect():
                            dbname=os.getenv("POSTGRES_DB"))
 
 
+def worth_scoring(e):
+    """Every Orange/Red event with a country, and every tropical cyclone (GDACS can under-rate them)."""
+    return bool(e["countries"]) and (e["alert_level"] in ("Orange", "Red") or e["event_type"] == "TC")
+
+
+def store(db, e, ids, source="gdacs"):
+    """Run the engine on one event and write events / impact_scores / impact_runs. Returns the result."""
+    r = simulate_event(e)
+    key = e["event_key"]
+    db.execute("""INSERT INTO events (event_id, ts, event_type, country_id, latitude, longitude, severity, source)
+                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (event_id) DO NOTHING""",
+               (key, e["start_ts"], e["event_type"], ids.get(e["countries"][0]), e["latitude"],
+                e["longitude"], severity_for(e["alert_level"]), source))
+    db.execute("DELETE FROM impact_scores WHERE event_id = %s", (key,))
+    rows = [(key, "country", c["iso3"], c["hop"], c["chains"][0]["components"]["E"], c["centrality"], c["score"])
+            for c in r["affected"]]
+    rows += [(key, "industry", "{}:{}".format(i["iso3"], i["industry"]), i["hop"], None, None, i["score"])
+             for i in r["industries"]]
+    with db.cursor() as cur:
+        cur.executemany("""INSERT INTO impact_scores (event_id, entity_type, entity_id, hop_level,
+                           exposure_score, centrality_score, impact_score) VALUES (%s,%s,%s,%s,%s,%s,%s)""", rows)
+    db.execute("""INSERT INTO impact_runs (event_id, result, max_score, countries) VALUES (%s, %s, %s, %s)
+                  ON CONFLICT (event_id) DO UPDATE SET result = EXCLUDED.result, max_score = EXCLUDED.max_score,
+                  countries = EXCLUDED.countries, created_at = now()""",
+               (key, json.dumps(r), max([c["score"] for c in r["affected"]] or [0]), len(r["affected"])))
+    return r
+
+
 def main():
     with open(ROOT / "data" / "replay" / "events.jsonl", encoding="utf-8") as f:
         events = [json.loads(line) for line in f]
-    chosen = [e for e in events if e["countries"] and (e["alert_level"] in ("Orange", "Red") or e["event_type"] == "TC")]
+    chosen = [e for e in events if worth_scoring(e)]
     print("running the engine on {} events".format(len(chosen)))
 
     t0 = time.time()
@@ -42,24 +70,7 @@ def main():
         ids = dict(db.execute("SELECT iso3, country_id FROM countries").fetchall())
         stored, boosted = 0, 0
         for e in chosen:
-            r = simulate_event(e)
-            key = e["event_key"]
-            db.execute("""INSERT INTO events (event_id, ts, event_type, country_id, latitude, longitude, severity, source)
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, 'gdacs') ON CONFLICT (event_id) DO NOTHING""",
-                       (key, e["start_ts"], e["event_type"], ids.get(e["countries"][0]), e["latitude"],
-                        e["longitude"], severity_for(e["alert_level"])))
-            db.execute("DELETE FROM impact_scores WHERE event_id = %s", (key,))
-            rows = [(key, "country", c["iso3"], c["hop"], c["chains"][0]["components"]["E"], c["centrality"], c["score"])
-                    for c in r["affected"]]
-            rows += [(key, "industry", "{}:{}".format(i["iso3"], i["industry"]), i["hop"], None, None, i["score"])
-                     for i in r["industries"]]
-            with db.cursor() as cur:
-                cur.executemany("""INSERT INTO impact_scores (event_id, entity_type, entity_id, hop_level,
-                                   exposure_score, centrality_score, impact_score) VALUES (%s,%s,%s,%s,%s,%s,%s)""", rows)
-            db.execute("""INSERT INTO impact_runs (event_id, result, max_score, countries) VALUES (%s, %s, %s, %s)
-                          ON CONFLICT (event_id) DO UPDATE SET result = EXCLUDED.result, max_score = EXCLUDED.max_score,
-                          countries = EXCLUDED.countries, created_at = now()""",
-                       (key, json.dumps(r), max([c["score"] for c in r["affected"]] or [0]), len(r["affected"])))
+            r = store(db, e, ids)
             stored += 1
             boosted += bool(r["weather_evidence"]) and r["parameters"]["severity_in"] < r["parameters"]["severity_used"]
         db.commit()
