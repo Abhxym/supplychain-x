@@ -59,7 +59,7 @@ nothing else to install.
 ```bash
 cp .env.example .env                     # then add your COMTRADE_API_KEY
 docker compose up -d                     # kafka, postgres, neo4j, hdfs, spark
-python -m venv .venv && .venv\Scriptsctivate && pip install -r requirements.txt
+python -m venv .venv && .venv\Scripts\activate && pip install -r requirements.txt
 python scripts/check_services.py         # all five should say [ok]
 
 # phase 1: download the raw data into the local landing zone
