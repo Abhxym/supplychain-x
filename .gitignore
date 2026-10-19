@@ -36,3 +36,6 @@ data/replay/
 data/graph/
 .claude/
 data/live/
+
+# private viva prep - kept locally, never pushed
+docs/viva-questions.md

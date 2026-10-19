@@ -105,7 +105,6 @@ Details: [graph-and-impact.md](graph-and-impact.md)
 No new features - fixes only.
 - [x] Experiments collected: [experiments.md](experiments.md) (Phase 3 E0-E6, Phase 6 E7-E9)
 - [x] Demo script, timed in a full dry run, with a backup plan: [demo-script.md](demo-script.md)
-- [x] Viva questions with short answers: [viva-questions.md](viva-questions.md)
 - [x] Fix found while rehearsing: `kafka_topics.py --reset` used `TRUNCATE ... CASCADE`, which also wiped every scored event
 - [ ] Report
 - [ ] Paper
