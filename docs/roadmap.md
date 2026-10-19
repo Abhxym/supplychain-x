@@ -78,11 +78,16 @@ Details: [graph-and-impact.md](graph-and-impact.md)
 - [x] 556 historical events scored into `impact_scores` + `impact_runs`
 - [x] Cascade Explorer UI (FastAPI + D3): animated world map, what-if simulator
 
-## Phase 6 – ML + validation
-- Isolation Forest on trade / weather series for anomalies
-- Severity classifier (RF / logistic regression) – a side component, not the headline
-- Experiment: severity only vs + exposure vs + centrality, compared with Precision@K / Recall@K
-  against known historical disruptions
+## Phase 6 – ML + validation  ✅ done
+- [x] Isolation Forest on trade drops and port weather (`python -m ml.anomalies`) - the strangest drops are
+      political (Russian fuel 2023, Ukrainian cereals 2022), not weather
+- [x] Severity classifier (RF / logistic regression), a side component (`python -m ml.severity`):
+      macro F1 0.45 vs 0.33 for "always Green"; context alone cannot replace the event's physical size
+- [x] Sourced ground truth of known disruptions (`ml/ground_truth.json`): 4 cases + 1 negative control,
+      exclusions documented
+- [x] Experiment: severity only vs + trade vs + centrality, Precision@K / Recall@K / Hit@K, random floor,
+      cluster bootstrap (`python -m ml.validate`). No variant proven better; trade dependency helps,
+      centrality shows a hub bias. Write-up in [experiments.md](experiments.md)
 
 ## Phase 7 – API + dashboard
 - FastAPI: `/events`, `/impact/{event_id}`, `/graph/{entity_id}`, `/alerts`, `POST /simulate`
