@@ -66,14 +66,15 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
   display: grid; min-height: calc(100vh - 64px);
   grid-template-columns: 290px 1fr 1fr 210px;
   grid-template-rows: minmax(max(600px, calc(100vh - 64px - 290px)), auto) auto auto;
-  grid-template-areas: "hero map map gauges" "matrix matrix alerts alerts" "anoms anoms anoms anoms";
+  grid-template-areas: "hero map map gauges" "matrix matrix alerts alerts" "anoms anoms live live";
 }
 .hero { grid-area: hero; padding: 26px 22px 18px; display: flex; flex-direction: column; gap: 22px; }
 .map { grid-area: map; position: relative; min-height: 560px; overflow: hidden; }
 .gauges { grid-area: gauges; display: flex; flex-direction: column; justify-content: space-evenly; gap: 14px; padding: 18px 18px 18px 0; }
 .matrix-card { grid-area: matrix; }
 .alerts-card { grid-area: alerts; }
-.anoms-card { grid-area: anoms; min-height: 0; }
+.anoms-card { grid-area: anoms; min-height: 0; margin-right: 7px; }
+.live-card { grid-area: live; min-height: 0; margin-left: 7px; }
 .card { margin: 0 14px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--glass);
   padding: 16px 18px; min-height: 260px; display: flex; flex-direction: column; }
 .matrix-card { margin-right: 7px; }
@@ -196,22 +197,22 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 /* ---------- smaller screens ---------- */
 @media (max-width: 1240px) {
   .grid { height: auto; grid-template-columns: 1fr 1fr; grid-template-rows: auto;
-    grid-template-areas: "hero gauges" "map map" "matrix matrix" "alerts alerts" "anoms anoms"; }
+    grid-template-areas: "hero gauges" "map map" "matrix matrix" "alerts alerts" "anoms anoms" "live live"; }
   .map { aspect-ratio: 16 / 9; }
   .gauges { flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 18px; }
   .card { margin: 0 14px 14px; min-height: 230px; }
-  .matrix-card, .alerts-card { margin: 0 14px 14px; }
+  .matrix-card, .alerts-card, .anoms-card, .live-card { margin: 0 14px 14px; }
   .hide-sm { display: none; }
 }
 @media (max-width: 760px) {
   .bar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 10px; }
   .filters { margin: 0; }
-  .grid { grid-template-columns: 1fr; grid-template-areas: "hero" "map" "gauges" "matrix" "alerts" "anoms"; }
+  .grid { grid-template-columns: 1fr; grid-template-areas: "hero" "map" "gauges" "matrix" "alerts" "anoms" "live"; }
   .hero { padding: 20px 16px; }
   .map { aspect-ratio: 4 / 3; }
   .stack { display: none; }
   .alert-grid { grid-template-columns: repeat(2, 1fr); }
-  .card, .matrix-card, .alerts-card { margin: 0 16px 16px; }
+  .card, .matrix-card, .alerts-card, .anoms-card, .live-card { margin: 0 16px 16px; }
   .pop { left: 16px !important; right: 16px; width: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -261,6 +262,21 @@ h1 { margin: 0; font-size: 30px; line-height: 1.08; font-weight: 500; letter-spa
 .an-row .an-bar i { display: block; height: 100%; margin-left: auto; background: var(--red); opacity: .85; }
 .anoms-card .card-h { flex-wrap: wrap; gap: 6px 12px; }
 .anoms-card .card-h > span:first-child, .anoms-card .tool { white-space: nowrap; }
+/* live alerts from the streaming job (Phase 7) */
+.live-card .card-h > span:first-child { display: flex; align-items: center; gap: 8px; }
+.live-list { display: flex; flex-direction: column; }
+.lv-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2px 12px; padding: 9px 10px;
+  margin: 0 -10px; border-radius: 10px; font-size: 13px; cursor: pointer; min-width: 0; }
+.lv-row:hover { background: var(--glass-2); }
+.lv-row.new { animation: lvnew 2.4s ease-out; }
+.lv-row .sev { grid-row: 1 / span 2; font-size: 10px; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; }
+.sev.HIGH { color: var(--red); background: rgba(255, 77, 90, .14); }
+.sev.MEDIUM { color: var(--orange); background: rgba(255, 138, 61, .12); }
+.sev.LOW { color: var(--teal); background: rgba(43, 228, 167, .1); }
+.lv-row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-row .w { grid-column: 2; color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-row .cs { grid-row: 1 / span 2; grid-column: 3; color: var(--muted); font-size: 11px; white-space: nowrap; }
+@keyframes lvnew { from { background: rgba(255, 77, 90, .18); } to { background: transparent; } }
 .an-empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
 #matrix .cell:hover, #matrix .cell.sel { stroke: var(--text); stroke-width: 1.5; }
 .cell-pop { width: 340px; }

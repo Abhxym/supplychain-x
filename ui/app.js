@@ -255,6 +255,45 @@ async function drawAnomalies() {
        disruptions - a two-week port closure rarely shows up in a whole year of trade.</div>`;
 }
 
+// ================================================================ live alerts (Phase 7)
+// The Spark streaming job writes alerts to Postgres. Every 5 s we ask only for alerts newer than the
+// last one we have (?after=<id>), so a replay into Kafka shows up here as it happens.
+const LIVE_ROWS = 8, LIVE_EVERY = 5000;
+const live = { items: [], lastId: 0, total: 0 };
+const ago = t => { const s = Math.max(0, (Date.now() - new Date(t)) / 1000);
+  return s < 60 ? "just now" : s < 3600 ? Math.round(s / 60) + " min ago" : s < 86400 ? Math.round(s / 3600) + " h ago" : Math.round(s / 86400) + " d ago"; };
+
+async function pollAlerts() {
+  if (document.hidden) return;                    // no polling in a background tab
+  const res = await fetch(`/api/alerts?limit=${LIVE_ROWS}&after=${live.lastId}`).catch(() => null);
+  if (!res || !res.ok) { $("#live-sub").textContent = "alerts API not reachable"; return; }
+  const data = await res.json();
+  const first = !live.loaded;
+  live.loaded = true;
+  live.total = data.total;
+  $("#live-sub").textContent = `${fmt(live.total)} alerts · checked ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  if (!first && !data.items.length) return;      // nothing new: leave the list (and any flash) alone
+  const fresh = first ? new Set() : new Set(data.items.map(a => a.id));
+  if (data.items.length) live.lastId = data.items[0].id;
+  live.items = [...data.items, ...live.items].slice(0, LIVE_ROWS);
+  $("#live-list").innerHTML = live.items.length ? live.items.map(a => `
+    <div class="lv-row${fresh.has(a.id) ? " new" : ""}" data-alert="${a.id}" title="${esc(a.downstream || a.why || "")}">
+      <span class="sev ${esc(a.severity)}">${esc(a.severity)}</span>
+      <span class="t">${esc(a.title)}</span>
+      <span class="cs">${esc(a.countries.slice(0, 3).join(" · "))}${a.countries.length > 3 ? " +" + (a.countries.length - 3) : ""}<br>${ago(a.created_at)}</span>
+      <span class="w">${esc(a.why || "")}</span>
+    </div>`).join("")
+    : `<div class="an-empty">No alerts yet. Start the Kafka replay and the streaming job (docs/streaming.md) to see them arrive.</div>`;
+}
+
+function openAlert(id) {
+  const a = live.items.find(x => x.id === +id);
+  if (!a) return;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (a.scored) openEvent(a.event_id);                         // the engine already scored this event
+  else if (a.countries.length) { state.sim = a.countries.slice(); renderChips(); runSim(); }
+}
+
 function curve([x1, y1], [x2, y2]) {
   const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy);
   return `M${x1},${y1} Q${(x1 + x2) / 2 - dy * 0.2},${(y1 + y2) / 2 + dx * 0.2 - d * 0.1} ${x2},${y2}`;
@@ -646,6 +685,10 @@ function bindUI() {
     $("#pop-q").value = e.target.value; renderEventList(); openPop("event-pop", $("#event-btn"));
   });
   $("#q").addEventListener("click", e => e.stopPropagation());
+  $("#live-list").addEventListener("click", e => { const row = e.target.closest("[data-alert]"); if (row) openAlert(row.dataset.alert); });
+  pollAlerts();
+  setInterval(pollAlerts, LIVE_EVERY);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) pollAlerts(); });
   $("#events").addEventListener("click", e => {
     const li = e.target.closest("li[data-id]");
     if (!li) return;
@@ -732,7 +775,10 @@ const INFO = {
     "Yearly import flows (importer &larr; supplier, one product) that fell in an <b>unusual</b> way, found by an " +
     "<b>Isolation Forest</b>: a machine-learning method that cuts the data at random and flags points that are cut off " +
     "after only a few cuts. No labels needed. Most of the strangest drops are <b>wars, sanctions and export bans</b>, " +
-    "not weather - short disasters rarely show up in a whole year of trade. <b>Orange names</b> are in the current cascade."],
+    "not weather - short disasters rarely show up in a whole year of trade. The <b>orange name</b> is the country hit by this event."],
+  live: ["Live alerts",
+    "Alerts raised by the <b>Spark streaming job</b> as disaster events flow through Kafka. The page checks for new ones " +
+    "every 5 seconds; new alerts flash red. <b>Click an alert</b> to see its cascade on the map. Hover for the downstream countries."],
 };
 
 function showInfo(btn) {
@@ -843,6 +889,8 @@ const TOUR = [
   { sel: ".anoms-card", title: "10. Unusual trade drops",
     text: "Trade flows that fell in a strange way, found by machine learning (Isolation Forest). " +
           "Press <b>Only hit country</b> to see the drops linked to the country hit by this event." },
+  { sel: ".live-card", title: "11. Live alerts",
+    text: "Alerts from the streaming pipeline, updated every 5 seconds. <b>Click one</b> to open its cascade." },
   { sel: "#help-btn", title: "That's it!",
     text: "Press <b>?</b> any time to see this again. Every panel also has a small <b>i</b> button with an explanation." },
 ];
