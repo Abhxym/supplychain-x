@@ -90,6 +90,41 @@ def impact(event_id: str):
     return row[0]
 
 
+@lru_cache(maxsize=1)
+def _stats():
+    """Dashboard-wide numbers: weekly disaster intensity and monthly severe port-weather days."""
+    import pandas as pd
+
+    ev = pd.read_json(ROOT / "data" / "replay" / "events.jsonl", lines=True)
+    ev["week"] = pd.to_datetime(ev["start_ts"]).dt.to_period("W").dt.start_time.dt.strftime("%Y-%m-%d")
+    ev["serious"] = ev["alert_level"].isin(["Orange", "Red"])
+    weekly = ev.groupby("week").agg(all=("event_key", "size"), serious=("serious", "sum")).reset_index()
+
+    frames = [pd.read_parquet(f, columns=["time", "precipitation_sum", "wind_gusts_10m_max"])
+              for f in (ROOT / "data" / "bronze" / "weather").glob("*.parquet")]
+    w = pd.concat(frames)
+    w["severe"] = (w.precipitation_sum >= 115.6) | (w.wind_gusts_10m_max >= 89)
+    monthly = w.groupby(w.time.str[:7]).severe.sum().reset_index().rename(columns={"time": "month", "severe": "days"})
+
+    with connect() as db:
+        boosted = db.execute("""SELECT count(*) FROM impact_runs WHERE (result->'parameters'->>'severity_used')::float
+                                > (result->'parameters'->>'severity_in')::float""").fetchone()[0]
+        scored = db.execute("SELECT count(*) FROM impact_runs").fetchone()[0]
+    levels = ev["alert_level"].value_counts().to_dict()
+    return {
+        "total_events": int(len(ev)),
+        "levels": {k: int(levels.get(k, 0)) for k in ("Green", "Orange", "Red")},
+        "weather_boosted": int(boosted), "scored": int(scored),
+        "weekly": weekly.astype({"all": int, "serious": int}).to_dict("records"),
+        "monthly_severe": monthly.astype({"days": int}).to_dict("records"),
+    }
+
+
+@app.get("/api/stats")
+def stats():
+    return _stats()
+
+
 class Simulation(BaseModel):
     countries: List[str] = Field(..., examples=[["CHN"]])
     severity: float = Field(0.8, ge=0, le=1)
