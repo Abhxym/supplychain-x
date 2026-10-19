@@ -113,3 +113,25 @@ def test_anomalies_and_country_filter():
     assert all(a["change"] < 0 for a in allx["items"])  # only drops are stored
     jpn = client.get("/api/anomalies?countries=JPN").json()
     assert all("JPN" in (a["importer"], a["supplier"]) for a in jpn["items"])
+
+
+def test_anomalies_year_filter():
+    d = client.get("/api/anomalies?countries=CHN&years=2021,2022").json()
+    assert d["total"] > 0
+    assert all(a["year"] in (2021, 2022) and "CHN" in (a["importer"], a["supplier"]) for a in d["items"])
+
+
+def test_live_gdacs_message_matches_the_replay_format():
+    from ingestion.live_gdacs import to_message
+    f = {"geometry": {"type": "Point", "coordinates": [139.7, 35.6]},
+         "properties": {"eventtype": "TC", "eventid": 1001338, "episodeid": 7, "alertlevel": "RED", "alertscore": 3,
+                        "name": "Tropical Cyclone TEST", "fromdate": "2026-10-14T00:00:00", "todate": "2026-10-10T00:00:00",
+                        "iso3": "JPN", "affectedcountries": [{"iso3": "JPN"}, {"iso3": "GUM"}],
+                        "severitydata": {"severity": 180, "severityunit": "km/h"}}}
+    m = to_message(f)
+    replay_keys = {"event_key", "event_type", "alert_level", "alert_score", "severity_value", "severity_unit",
+                   "title", "start_ts", "end_ts", "latitude", "longitude", "countries"}
+    assert replay_keys <= set(m)
+    assert m["event_key"] == "TC-1001338" and m["alert_level"] == "Red" and m["feed"] == "gdacs-live"
+    assert m["countries"] == ["GUM", "JPN"] and (m["latitude"], m["longitude"]) == (35.6, 139.7)
+    assert m["end_ts"] == m["start_ts"]  # an end before the start is clamped, like silver_events does

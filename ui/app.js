@@ -52,7 +52,8 @@ async function init() {
     else if (c.port_lon != null) state.lonlat.set(c.iso3, [c.port_lon, c.port_lat]);
   });
 
-  $("#sub").textContent = `Data based on ${fmt(stats.total_events)} events · ${stats.scored} scored`;
+  $("#sub").textContent = `Data based on ${fmt(stats.total_events)} events · ${stats.scored} scored` +
+    (stats.live_events ? ` · ${fmt(stats.live_events)} live` : "");
   $("#graph-size").textContent = `${countries.length} countries`;
   $("#country-list").innerHTML = countries.map(c => `<option value="${c.name} (${c.iso3})"></option>`).join("");
 
@@ -219,16 +220,30 @@ const SHORT = { RUS: "Russia", HKG: "Hong Kong", ARE: "UAE", KOR: "S. Korea", US
                 IRN: "Iran", TUR: "Türkiye", NLD: "Netherlands", SAU: "Saudi Arabia", VNM: "Vietnam" };
 const shortName = (iso, name) => SHORT[iso] || name || iso;
 
+const TRADE_FIRST = 2020, TRADE_LAST = 2023;   // years with a year-on-year change (Comtrade 2019-2023)
+
 async function drawAnomalies() {
   const r = state.result;
   const only = $("#an-only").getAttribute("aria-pressed") === "true";
   const hit = r ? r.sources.map(s => s.iso3) : [];
-  const key = only + hit.join(",");
+  // the event's year and the next one: a disruption shows up in yearly trade that year or the year after.
+  // Trade data covers 2020-2023 (each drop is measured against the year before), so later events
+  // (live ones) and simulations get the hit country's drops from every year instead.
+  const y = r && r.event ? +r.event.start_ts.slice(0, 4) : null;
+  const years = y && y <= TRADE_LAST ? [y, y + 1].filter(v => v >= TRADE_FIRST && v <= TRADE_LAST) : [];
+  const forEvent = only && hit.length;
+  const key = only + hit.join(",") + years.join(",");
   if (key === state.anomKey) return;              // render() also runs on resize - don't refetch
   state.anomKey = key;
-  const qs = only && hit.length ? "&countries=" + hit.join(",") : "";
-  const res = await fetch("/api/anomalies?limit=11" + qs).catch(() => null);
-  const data = res && res.ok ? await res.json() : null;
+  const get = qs => fetch("/api/anomalies?limit=11" + qs).catch(() => null);
+  let res = await get(forEvent ? "&countries=" + hit.join(",") + (years.length ? "&years=" + years.join(",") : "") : "");
+  let data = res && res.ok ? await res.json() : null;
+  let widened = false;
+  if (data && forEvent && years.length && !data.total) {   // nothing in those years: show the country's other years
+    res = await get("&countries=" + hit.join(","));
+    data = res && res.ok ? await res.json() : null;
+    widened = true;
+  }
   if (key !== state.anomKey) return;              // a newer event was picked meanwhile
   if (!data) {
     // 404: the API process is older than this page; 500: the table is missing
@@ -243,7 +258,12 @@ async function drawAnomalies() {
   // every cascade contains all 20 importers, so only the hit country is worth highlighting
   const isHit = new Set(hit);
   const names = hit.map(i => shortName(i, state.countries.get(i)?.name)).join(" + ");
-  $("#an-sub").textContent = only ? `${fmt(data.total)} involve ${names}` : `top ${data.items.length} of ${fmt(data.total)}`;
+  const span = years.length > 1 ? `${years[0]}–${years.at(-1)}` : years.join("");
+  $("#an-sub").textContent = !forEvent ? `strangest ${data.items.length} of ${fmt(data.total)}`
+    : widened ? `none in ${span} · ${names}, all years`
+    : years.length ? `${names} · ${span} · ${fmt(data.total)} drops`
+    : y > TRADE_LAST ? `trade data ends ${TRADE_LAST} · ${names}, all years`
+    : `${names} · all years · ${fmt(data.total)} drops`;
   const who = (iso, name) => isHit.has(iso) ? `<b>${esc(shortName(iso, name))}</b>` : esc(shortName(iso, name));
   $("#anoms").innerHTML = data.items.length ? data.items.map(a => `
     <div class="an-row" title="${money(a.value_before)} → ${money(a.value_after)} · supplier's share ${a.share_change > 0 ? "+" : ""}${(a.share_change * 100).toFixed(1)} pts · anomaly score ${a.score.toFixed(2)}">
@@ -842,7 +862,8 @@ const INFO = {
     "Yearly import flows (importer &larr; supplier, one product) that fell in an <b>unusual</b> way, found by an " +
     "<b>Isolation Forest</b>: a machine-learning method that cuts the data at random and flags points that are cut off " +
     "after only a few cuts. No labels needed. Most of the strangest drops are <b>wars, sanctions and export bans</b>, " +
-    "not weather - short disasters rarely show up in a whole year of trade. The <b>orange name</b> is the country hit by this event."],
+    "not weather - short disasters rarely show up in a whole year of trade. With <b>This event</b> on, the card shows the hit country's " +
+    "drops (<b>orange</b>) in the event's year and the next; off, the strangest drops of all."],
   live: ["Live alerts",
     "Alerts raised by the <b>Spark streaming job</b> as disaster events flow through Kafka. The page checks for new ones " +
     "every 5 seconds; new alerts flash red. <b>Click an alert</b> to see its cascade on the map. Hover for the downstream countries."],
@@ -955,7 +976,7 @@ const TOUR = [
     text: "All 48,802 disasters by alert level. The last card counts events our weather data found to be worse than reported." },
   { sel: ".anoms-card", title: "10. Unusual trade drops",
     text: "Trade flows that fell in a strange way, found by machine learning (Isolation Forest). " +
-          "Press <b>Only hit country</b> to see the drops linked to the country hit by this event." },
+          "It follows the event you pick: the hit country's drops in the event's year and the next. Switch off <b>This event</b> for the strangest drops overall." },
   { sel: ".live-card", title: "11. Live alerts",
     text: "Alerts from the streaming pipeline, updated every 5 seconds. <b>Click one</b> to open its cascade." },
   { sel: "#help-btn", title: "That's it!",
