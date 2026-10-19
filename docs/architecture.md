@@ -37,7 +37,7 @@
                                                                     ↓
                                                               impact engine
                                                                     ↓
-                                                                 FastAPI ──> React dashboard
+                                                                 FastAPI ──> D3 dashboard
                                                                     ↑
  historical events ─> replay producer ─> Kafka ─> Spark Structured Streaming
 
@@ -73,6 +73,11 @@ as recursive SQL joins. In a graph it's a single pattern match, and GDS gives us
 community detection on top.
 
 **PostgreSQL.** Plain structured data the API needs fast: countries, events, impact scores, alerts.
+
+**D3 instead of React.** The plan said React. The dashboard was built with D3 and plain JavaScript instead:
+the hard part is drawing (a dot-matrix map, cascade animation, network view), which is D3's job either way,
+and React would add a build step and a framework without adding a feature. FastAPI serves the three
+files in `ui/` as they are.
 
 ## Graph model
 

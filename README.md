@@ -22,7 +22,7 @@ and how hard a disruption is likely to spread.
 
 ```
  Historical data ──> HDFS data lake (Parquet: bronze/silver/gold) ──┐
-                                                                   ├──> Spark ──> PostgreSQL / Neo4j / ML ──> Impact engine ──> FastAPI ──> React dashboard
+                                                                   ├──> Spark ──> PostgreSQL / Neo4j / ML ──> Impact engine ──> FastAPI ──> D3 dashboard
  Live events ─────> Kafka topics ──> Structured Streaming ─────────┘
 ```
 
@@ -38,9 +38,10 @@ More detail in [docs/architecture.md](docs/architecture.md).
 | Streaming      | Apache Kafka + Spark Structured Streaming |
 | Graph          | Neo4j + Graph Data Science            |
 | Relational     | PostgreSQL                            |
-| ML             | scikit-learn (Isolation Forest, RF)   |
+| ML             | scikit-learn (Isolation Forest, RF, logistic regression) |
 | API            | FastAPI                               |
-| Frontend       | React                                 |
+| Frontend       | D3.js + plain JavaScript (no build step; see docs/architecture.md) |
+| Tests          | pytest + FastAPI TestClient (`python -m pytest -q`) |
 
 ## Data sources (V1 core)
 
@@ -101,6 +102,14 @@ python -m graph.load_neo4j
 python -m graph.algorithms
 python -m impact.run_events
 python -m uvicorn api.main:app --port 8000      # open http://localhost:8000
+
+# phase 6: ML + validation - see docs/experiments.md
+python -m ml.anomalies
+python -m ml.severity
+python -m ml.validate
+
+# phase 7: API tests (services must be up)
+python -m pytest -q
 ```
 
 | Service          | URL                      |

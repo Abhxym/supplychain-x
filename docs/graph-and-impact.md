@@ -87,12 +87,17 @@ variants (severity only / + exposure / + centrality) against historical cases.
 - **Bottom:** industry x country dot matrix of the cascade, and events by alert level.
 - **Unusual trade drops** (Phase 6, `GET /api/anomalies`): the 12 strangest import drops Isolation Forest found
   (`python -m ml.anomalies`), with value before -> after and the change in the supplier's share. **Only hit
-  country** keeps the drops where the event's country is supplier or importer; names in the cascade are orange.
+  country** keeps the drops where the event's country is supplier or importer; the hit country is orange.
+- **Live alerts** (Phase 7, `GET /api/alerts`): the Spark streaming job's alerts, newest first. The page asks for
+  alerts newer than the last one it has (`?after=<id>`) every 5 s, so a Kafka replay shows up as it runs; new ones
+  flash red. Click one to open its cascade (or simulate it if the engine hasn't scored that event).
+- **Graph view** (Phase 7, `GET /api/graph/{iso3}`): click any country on the map - its top suppliers on the left,
+  the countries that depend on it on the right, line width = share. Click a neighbour to walk the graph.
 - **Top bar:** event picker (556 scored events, searchable) and the what-if simulator (countries, severity,
   duration, decay, minimum link share).
 - **Every number is explainable:** click any dot in the industry matrix for the full breakdown (why that
   country/industry is exposed, the five factors and the formula with the actual numbers), switch on
   **Values** to print every score, or open **All values** for the complete table of the cascade.
-- **Made for first-time viewers:** a welcome card on the first visit, an 11-step guided tour that spotlights
+- **Made for first-time viewers:** a welcome card on the first visit, a 12-step guided tour that spotlights
   each panel (restart it with the ? button), an i button with a plain-language explanation on every panel,
   and a map legend.

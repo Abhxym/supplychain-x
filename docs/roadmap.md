@@ -89,9 +89,13 @@ Details: [graph-and-impact.md](graph-and-impact.md)
       cluster bootstrap (`python -m ml.validate`). No variant proven better; trade dependency helps,
       centrality shows a hub bias. Write-up in [experiments.md](experiments.md)
 
-## Phase 7 – API + dashboard
-- FastAPI: `/events`, `/impact/{event_id}`, `/graph/{entity_id}`, `/alerts`, `POST /simulate`
-- React: risk map, live events, graph view, analytics, what-if simulator
+## Phase 7 – API + dashboard  ✅ done
+- [x] FastAPI: `/api/events`, `/api/impact/{event_id}`, `/api/graph/{iso3}`, `/api/alerts`, `POST /api/simulate`
+      (+ `/api/countries`, `/api/stats`, `/api/anomalies`); docs at http://localhost:8000/docs
+- [x] Dashboard: risk map, **live alerts** (polls the streaming job's alerts every 5 s), **graph view**
+      (click a country: its suppliers and dependents), analytics, what-if simulator, unusual trade drops
+- [x] D3 + plain JavaScript instead of React - same features, no build step (reason in architecture.md)
+- [x] API tests: `python -m pytest -q` - 14 tests over every endpoint, skipped when the databases are down
 
 ## Phase 8 – Freeze + write-up
 Experiments, report, paper, demo script, viva prep. No new features.
