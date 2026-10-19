@@ -1,0 +1,31 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# secrets
+.env
+
+# data lake - too big for git, regenerate with the ingestion scripts
+data/bronze/*
+data/silver/*
+data/gold/*
+!data/**/.gitkeep
+
+# spark
+spark-warehouse/
+metastore_db/
+derby.log
+checkpoints/
+
+# node
+node_modules/
+dist/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
