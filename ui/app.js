@@ -4,7 +4,7 @@
 // cascade heat up wave by wave (teal -> yellow -> orange -> red by impact score) with a soft glow
 // underneath; supply links, markers and callouts sit on an SVG layer on top.
 
-const WORLD = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+const WORLD = "/static/countries-110m.json";
 const HOP = 1100;               // ms between cascade waves
 const C = { teal: "#2be4a7", yellow: "#f5d76e", orange: "#ff8a3d", red: "#ff4d5a", cyan: "#5ad1ff",
             text: "#e8eeec", muted: "#7c8a86" };
