@@ -12,6 +12,8 @@ GET  /api/graph/{iso3}    a country's suppliers and customers in the supply grap
 GET  /api/anomalies       unusual trade drops from Isolation Forest (Phase 6), optionally for some countries
 """
 import json
+import os
+import socket
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
@@ -23,10 +25,28 @@ from pydantic import BaseModel, Field
 
 from impact.engine import _neo4j, simulate
 from impact.run_events import connect
+from api import demo_provider
 
 ROOT = Path(__file__).resolve().parent.parent
 app = FastAPI(title="SUPPLYCHAIN-X", description="Supply-chain disruption intelligence and cascading impact")
 app.mount("/static", StaticFiles(directory=ROOT / "ui"), name="static")
+
+
+def is_neo4j_available() -> bool:
+    try:
+        with socket.create_connection(("localhost", 7687), timeout=0.08):
+            return True
+    except OSError:
+        return False
+
+
+def is_postgres_available() -> bool:
+    try:
+        port = int(os.getenv("POSTGRES_PORT", "5433"))
+        with socket.create_connection(("localhost", port), timeout=0.08):
+            return True
+    except OSError:
+        return False
 
 
 @app.get("/", include_in_schema=False)
@@ -52,45 +72,65 @@ def iso_numeric():
 
 @app.get("/api/countries")
 def countries():
-    with _neo4j().session() as s:
-        rows = s.run("""MATCH (c:Country)
-                        OPTIONAL MATCH (p:Port)-[:LOCATED_IN]->(c)
-                        RETURN c.iso3 AS iso3, c.name AS name, c.betweenness_norm AS centrality,
-                               c.supply_strength AS supply_strength, c.community AS community,
-                               c.is_reporter AS is_reporter,
-                               avg(p.latitude) AS port_lat, avg(p.longitude) AS port_lon,
-                               collect(p.name) AS ports
-                        ORDER BY c.name""").data()
-    codes = iso_numeric()
-    for r in rows:
-        r["numeric"] = codes.get(r["iso3"])
-    return rows
+    if is_neo4j_available():
+        try:
+            with _neo4j().session() as s:
+                rows = s.run("""MATCH (c:Country)
+                                OPTIONAL MATCH (p:Port)-[:LOCATED_IN]->(c)
+                                RETURN c.iso3 AS iso3, c.name AS name, c.betweenness_norm AS centrality,
+                                       c.supply_strength AS supply_strength, c.community AS community,
+                                       c.is_reporter AS is_reporter,
+                                       avg(p.latitude) AS port_lat, avg(p.longitude) AS port_lon,
+                                       collect(p.name) AS ports
+                                ORDER BY c.name""").data()
+            codes = iso_numeric()
+            for r in rows:
+                r["numeric"] = codes.get(r["iso3"])
+            if rows:
+                return rows
+        except Exception:
+            pass
+    return demo_provider.get_demo_countries()
 
 
 @app.get("/api/events")
 def events(limit: int = 200, q: Optional[str] = None):
-    sql = """SELECT event_id, result->'event'->>'title', result->'event'->>'alert_level',
-                    result->'event'->>'event_type', result->'event'->>'start_ts',
-                    (result->'parameters'->>'severity_in')::float, (result->'parameters'->>'severity_used')::float,
-                    max_score, countries, result->'event'->'countries'
-             FROM impact_runs {} ORDER BY max_score DESC LIMIT %s"""
-    with connect() as db:
-        if q:
-            rows = db.execute(sql.format("WHERE result->'event'->>'title' ILIKE %s"), ("%" + q + "%", limit)).fetchall()
-        else:
-            rows = db.execute(sql.format(""), (limit,)).fetchall()
-    keys = ["event_id", "title", "alert_level", "event_type", "start_ts", "severity_in", "severity_used",
-            "max_score", "countries", "sources"]
-    return [dict(zip(keys, r)) for r in rows]
+    if is_postgres_available():
+        try:
+            sql = """SELECT event_id, result->'event'->>'title', result->'event'->>'alert_level',
+                            result->'event'->>'event_type', result->'event'->>'start_ts',
+                            (result->'parameters'->>'severity_in')::float, (result->'parameters'->>'severity_used')::float,
+                            max_score, countries, result->'event'->'countries'
+                     FROM impact_runs {} ORDER BY max_score DESC LIMIT %s"""
+            with connect() as db:
+                if q:
+                    rows = db.execute(sql.format("WHERE result->'event'->>'title' ILIKE %s"), ("%" + q + "%", limit)).fetchall()
+                else:
+                    rows = db.execute(sql.format(""), (limit,)).fetchall()
+            keys = ["event_id", "title", "alert_level", "event_type", "start_ts", "severity_in", "severity_used",
+                    "max_score", "countries", "sources"]
+            res = [dict(zip(keys, r)) for r in rows]
+            if res:
+                return res
+        except Exception:
+            pass
+    return demo_provider.get_demo_events(limit=limit, q=q)
 
 
 @app.get("/api/impact/{event_id}")
 def impact(event_id: str):
-    with connect() as db:
-        row = db.execute("SELECT result FROM impact_runs WHERE event_id = %s", (event_id,)).fetchone()
-    if not row:
-        raise HTTPException(404, "no impact run for " + event_id)
-    return row[0]
+    if is_postgres_available():
+        try:
+            with connect() as db:
+                row = db.execute("SELECT result FROM impact_runs WHERE event_id = %s", (event_id,)).fetchone()
+            if row and row[0]:
+                return row[0]
+        except Exception:
+            pass
+    res = demo_provider.get_demo_impact(event_id)
+    if res is None:
+        raise HTTPException(404, f"Event {event_id} not found")
+    return res
 
 
 @lru_cache(maxsize=1)
@@ -126,13 +166,18 @@ def _stats():
 @app.get("/api/stats")
 def stats():
     """The heavy part (weekly/monthly series) is cached; the counts are fresh, because the live feed adds events."""
-    out = dict(_stats())
-    with connect() as db:
-        out["scored"], out["live_scored"] = db.execute(
-            """SELECT count(*), count(*) FILTER (WHERE e.source = 'gdacs-live')
-               FROM impact_runs r LEFT JOIN events e ON e.event_id = r.event_id""").fetchone()
-        out["live_events"] = db.execute("SELECT count(*) FROM events WHERE source = 'gdacs-live'").fetchone()[0]
-    return out
+    if is_postgres_available():
+        try:
+            out = dict(_stats())
+            with connect() as db:
+                out["scored"], out["live_scored"] = db.execute(
+                    """SELECT count(*), count(*) FILTER (WHERE e.source = 'gdacs-live')
+                       FROM impact_runs r LEFT JOIN events e ON e.event_id = r.event_id""").fetchone()
+                out["live_events"] = db.execute("SELECT count(*) FROM events WHERE source = 'gdacs-live'").fetchone()[0]
+            return out
+        except Exception:
+            pass
+    return demo_provider.get_demo_stats()
 
 
 def _parse_alert(message):
@@ -152,17 +197,22 @@ def _parse_alert(message):
 
 @app.get("/api/alerts")
 def alerts(limit: int = 20, after: int = 0):
-    """Alerts raised by the Spark streaming job (Phase 4), newest first.
-    after=<alert id> returns only newer ones - the dashboard polls with it."""
-    with connect() as db:
-        rows = db.execute("""SELECT a.alert_id, a.event_id, a.severity, a.message, a.status, a.created_at,
-                                    r.event_id IS NOT NULL
-                             FROM alerts a LEFT JOIN impact_runs r ON r.event_id = a.event_id
-                             WHERE a.alert_id > %s ORDER BY a.alert_id DESC LIMIT %s""", (after, limit)).fetchall()
-        total = db.execute("SELECT count(*) FROM alerts").fetchone()[0]
-    items = [{"id": r[0], "event_id": r[1], "severity": r[2], "status": r[4], "created_at": r[5],
-              "scored": r[6], **_parse_alert(r[3])} for r in rows]
-    return {"total": total, "items": items}
+    """Alerts raised by the Spark streaming job (Phase 4), newest first."""
+    if is_postgres_available():
+        try:
+            with connect() as db:
+                rows = db.execute("""SELECT a.alert_id, a.event_id, a.severity, a.message, a.status, a.created_at,
+                                            r.event_id IS NOT NULL
+                                     FROM alerts a LEFT JOIN impact_runs r ON r.event_id = a.event_id
+                                     WHERE a.alert_id > %s ORDER BY a.alert_id DESC LIMIT %s""", (after, limit)).fetchall()
+                total = db.execute("SELECT count(*) FROM alerts").fetchone()[0]
+            if rows:
+                items = [{"id": r[0], "event_id": r[1], "severity": r[2], "status": r[4], "created_at": r[5],
+                          "scored": r[6], **_parse_alert(r[3])} for r in rows]
+                return {"total": total, "items": items}
+        except Exception:
+            pass
+    return demo_provider.get_demo_alerts(limit=limit, after=after)
 
 
 GRAPH_SIDE = """
@@ -177,51 +227,61 @@ ORDER BY share DESC LIMIT $limit
 
 @app.get("/api/graph/{iso3}")
 def graph(iso3: str, limit: int = 8):
-    """One country's neighbourhood in the supply graph: who it buys from (suppliers) and who
-    depends on it (customers), each with the strongest product link between the two."""
+    """One country's neighbourhood in the supply graph."""
     iso3 = iso3.upper()
-    with _neo4j().session() as s:
-        node = s.run("""MATCH (c:Country {iso3: $iso3})
-                        RETURN c.iso3 AS iso3, c.name AS name, c.betweenness_norm AS centrality,
-                               c.community AS community, c.is_reporter AS is_reporter""", iso3=iso3).single()
-        if not node:
-            raise HTTPException(404, "no country " + iso3 + " in the graph")
-        suppliers = s.run(GRAPH_SIDE.replace("{arrow}", "<-[r:SUPPLIES]-"), iso3=iso3, limit=limit).data()
-        customers = s.run(GRAPH_SIDE.replace("{arrow}", "-[r:SUPPLIES]->"), iso3=iso3, limit=limit).data()
-    return {"country": dict(node), "suppliers": suppliers, "customers": customers}
+    if is_neo4j_available():
+        try:
+            with _neo4j().session() as s:
+                node = s.run("""MATCH (c:Country {iso3: $iso3})
+                                RETURN c.iso3 AS iso3, c.name AS name, c.betweenness_norm AS centrality,
+                                       c.community AS community, c.is_reporter AS is_reporter""", iso3=iso3).single()
+                if node:
+                    suppliers = s.run(GRAPH_SIDE.replace("{arrow}", "<-[r:SUPPLIES]-"), iso3=iso3, limit=limit).data()
+                    customers = s.run(GRAPH_SIDE.replace("{arrow}", "-[r:SUPPLIES]->"), iso3=iso3, limit=limit).data()
+                    return {"country": dict(node), "suppliers": suppliers, "customers": customers}
+        except Exception:
+            pass
+    res = demo_provider.get_demo_graph(iso3, limit=limit)
+    if res is None:
+        raise HTTPException(404, f"Country {iso3} not found in graph")
+    return res
 
 
 @app.get("/api/anomalies")
 def anomalies(limit: int = 12, countries: Optional[str] = None, years: Optional[str] = None):
-    """Unusual import drops found by Isolation Forest (python -m ml.anomalies), strangest first.
-    countries=CHN,JPN keeps the drops where the importer or the supplier is one of them;
-    years=2021,2022 keeps those years (the dashboard asks for the event's year and the next)."""
-    codes = [c.strip().upper() for c in (countries or "").split(",") if c.strip()]
-    yrs = [int(y) for y in (years or "").split(",") if y.strip().isdigit()]
-    where, args = [], []
-    if codes:
-        where.append("(a.reporter = ANY(%s) OR a.partner = ANY(%s))")
-        args += [codes, codes]
-    if yrs:
-        where.append("a.year = ANY(%s)")
-        args.append(yrs)
-    cond = ("WHERE " + " AND ".join(where)) if where else ""
-    sql = """SELECT a.year, a.reporter, r.country_name, a.partner, p.country_name, a.hs2, c.commodity_name,
-                    a.value_prev::float, a.value::float, a.dshare, a.score
-             FROM ml_trade_anomalies a
-             LEFT JOIN countries r ON r.iso3 = a.reporter
-             LEFT JOIN countries p ON p.iso3 = a.partner
-             LEFT JOIN commodities c ON c.hs_code = a.hs2
-             {} ORDER BY a.score DESC LIMIT %s""".format(cond)
-    with connect() as db:
-        rows = db.execute(sql, args + [limit]).fetchall()
-        total = db.execute("SELECT count(*) FROM ml_trade_anomalies a " + cond, args).fetchone()[0]
-    keys = ["year", "importer", "importer_name", "supplier", "supplier_name", "hs2", "product",
-            "value_before", "value_after", "share_change", "score"]
-    items = [dict(zip(keys, r)) for r in rows]
-    for it in items:
-        it["change"] = it["value_after"] / it["value_before"] - 1
-    return {"total": total, "items": items}
+    """Unusual import drops found by Isolation Forest."""
+    if is_postgres_available():
+        try:
+            codes = [c.strip().upper() for c in (countries or "").split(",") if c.strip()]
+            yrs = [int(y) for y in (years or "").split(",") if y.strip().isdigit()]
+            where, args = [], []
+            if codes:
+                where.append("(a.reporter = ANY(%s) OR a.partner = ANY(%s))")
+                args += [codes, codes]
+            if yrs:
+                where.append("a.year = ANY(%s)")
+                args.append(yrs)
+            cond = ("WHERE " + " AND ".join(where)) if where else ""
+            sql = """SELECT a.year, a.reporter, r.country_name, a.partner, p.country_name, a.hs2, c.commodity_name,
+                            a.value_prev::float, a.value::float, a.dshare, a.score
+                     FROM ml_trade_anomalies a
+                     LEFT JOIN countries r ON r.iso3 = a.reporter
+                     LEFT JOIN countries p ON p.iso3 = a.partner
+                     LEFT JOIN commodities c ON c.hs_code = a.hs2
+                     {} ORDER BY a.score DESC LIMIT %s""".format(cond)
+            with connect() as db:
+                rows = db.execute(sql, args + [limit]).fetchall()
+                total = db.execute("SELECT count(*) FROM ml_trade_anomalies a " + cond, args).fetchone()[0]
+            if rows:
+                keys = ["year", "importer", "importer_name", "supplier", "supplier_name", "hs2", "product",
+                        "value_before", "value_after", "share_change", "score"]
+                items = [dict(zip(keys, r)) for r in rows]
+                for it in items:
+                    it["change"] = it["value_after"] / it["value_before"] - 1
+                return {"total": total, "items": items}
+        except Exception:
+            pass
+    return demo_provider.get_demo_anomalies(limit=limit, countries=countries, years=years)
 
 
 class Simulation(BaseModel):
@@ -237,5 +297,12 @@ class Simulation(BaseModel):
 def run_simulation(sim: Simulation):
     if not sim.countries:
         raise HTTPException(400, "pick at least one country")
-    return simulate(sim.countries, severity=sim.severity, duration_days=sim.duration_days,
-                    decay=sim.decay, min_share=sim.min_share, weights=sim.weights)
+    if is_neo4j_available():
+        try:
+            return simulate(sim.countries, severity=sim.severity, duration_days=sim.duration_days,
+                            decay=sim.decay, min_share=sim.min_share, weights=sim.weights)
+        except Exception:
+            pass
+    return demo_provider.simulate_demo(sim.countries, severity=sim.severity,
+                                      duration_days=sim.duration_days, decay=sim.decay,
+                                      min_share=sim.min_share)
